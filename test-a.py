@@ -32,7 +32,7 @@ if False: #test
     )
     print(res, flush=True)
 # --------------------------------------------------------------------------------
-dic_articles = {} # title:body
+dic_articles = {} # title:{body, caption}
 if "chapters" not in st.session_state:
     print('reading chapters', flush=True)
     with open('334AC0000000121_20230703_505AC0000000051.pickle', mode='rb') as f:
@@ -42,7 +42,8 @@ if "chapters" not in st.session_state:
         for a in c['articles']:
             s = BeautifulSoup(a['body'], 'html.parser')
             a['body'] = s.find('section')
-            dic_articles[a['title']] = a['body']
+            # dic_articles[a['title']] = a['body']
+            dic_articles[a['title']] = {'body':a['body'], 'caption':a['caption']}
     # print(chapters[0]['articles'][0]['body'].find('span'), flush=True)
     st.session_state.dic_articles = dic_articles
     st.session_state.chapters = chapters
@@ -81,9 +82,16 @@ def get_article_in_text(s, exclude=None):
     # ----------------------------------------
     if exclude in res:
         res.remove(exclude)
-    return res
+    # ----------------------------------------
+    tmp = s
+    for a in res:
+        # tmp = re.sub(f'({a})', '***\\1', tmp)
+        pfx = '<span style="color:#0000ee; font-weight:bold">'
+        sfx = '</span>'
+        tmp = re.sub(f'({a})', pfx+'\\1'+sfx, tmp)
+    return res, tmp
 if False: #debug
-    lis = get_article_in_text('特許庁長官は、遠隔又は交通不便の地にある者のため、請求により又は職権で、第四十六条の二第一項第三号、第百八条第一 項、第百二十一条第一項又は第百七十三条第一項に規定する期間を延長することができる。')
+    lis,_ = get_article_in_text('特許庁長官は、遠隔又は交通不便の地にある者のため、請求により又は職権で、第四十六条の二第一項第三号、第百八条第一 項、第百二十一条第一項又は第百七十三条第一項に規定する期間を延長することができる。')
     print(lis)
 # --------------------------------------------------------------------------------
 lis_article = None
@@ -105,11 +113,12 @@ if sel_a in lis_article:
     # https://docs.streamlit.io/library/components/components-api
     with st.expander('Expander 1', expanded=True):
         body = curr_chapter['articles'][idx]['body']
-        components.html(str(body), height=200, scrolling=True)
+        lis_rel_article, mod_body = \
+            get_article_in_text( str(body), exclude=body.find('span').get_text() )
+        components.html(mod_body, height=200, scrolling=True)
         # st.selectbox( "select related article", ("a", "b", "c") )
         # print(body)
-        lis_rel_article = get_article_in_text( str(body), exclude=body.find('span').get_text() )
-        sel_rel_article = st.selectbox( "select related article", lis_rel_article )
+        sel_rel_article = st.sidebar.selectbox( "select related article", lis_rel_article )
 # print('sel_rel_article', sel_rel_article)
 if sel_rel_article is not None:
     print('HA231203-c', 'sel_rel_article', sel_rel_article)
@@ -117,7 +126,14 @@ if sel_rel_article is not None:
     tmp_dic = st.session_state.dic_articles
     if (sel_rel_article in tmp_dic.keys()):
         with st.expander('Expander 2', expanded=True):
-            components.html(str(tmp_dic[sel_rel_article]), height=200, scrolling=True)
+            components.html(str(tmp_dic[sel_rel_article]['body']), height=200, scrolling=True)
+        # st.sidebar.markdown("- Item1")
+        for i in lis_rel_article:
+            if False:
+                st.sidebar.markdown(f"- {i}{tmp_dic[i]['caption']}")
+            else: # https://discuss.streamlit.io/t/change-font-size-and-font-color/12377/2
+                tmp = '- <p style="font-size: 10px;">'+f"{i}{tmp_dic[i]['caption']}"+'</p>'
+                st.sidebar.markdown(tmp, unsafe_allow_html=True)
 
 # --------------------------------------------------------------------------------
 if False: #test

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import io, sys
+import re
 import json, pickle
 # import numpy as np
 # import pandas as pd
@@ -31,15 +32,19 @@ if False: #test
     )
     print(res, flush=True)
 # --------------------------------------------------------------------------------
+dic_articles = {} # title:body
 if "chapters" not in st.session_state:
     print('reading chapters', flush=True)
     with open('334AC0000000121_20230703_505AC0000000051.pickle', mode='rb') as f:
         chapters = pickle.load(f)
+    dic_articles = {}
     for c in chapters:
         for a in c['articles']:
             s = BeautifulSoup(a['body'], 'html.parser')
             a['body'] = s.find('section')
+            dic_articles[a['title']] = a['body']
     # print(chapters[0]['articles'][0]['body'].find('span'), flush=True)
+    st.session_state.dic_articles = dic_articles
     st.session_state.chapters = chapters
     st.session_state.lis_chapter_title = [c['title'] for c in st.session_state.chapters]
 
@@ -62,6 +67,25 @@ if False: #test
 # st.title("My first app")
 
 # --------------------------------------------------------------------------------
+def get_article_in_text(s, exclude=None):
+    tmp = s
+    res = []
+    s1='[一二三四五六七八九十百]'
+    # ----------------------------------------
+    re_num=re.compile('第'+s1+'+条の'+s1+'+')
+    res += re_num.findall(tmp)
+    tmp = re_num.sub('', tmp)
+    # ----------------------------------------
+    re_num=re.compile('第'+s1+'+条')
+    res += re_num.findall(tmp)
+    # ----------------------------------------
+    if exclude in res:
+        res.remove(exclude)
+    return res
+if False: #debug
+    lis = get_article_in_text('特許庁長官は、遠隔又は交通不便の地にある者のため、請求により又は職権で、第四十六条の二第一項第三号、第百八条第一 項、第百二十一条第一項又は第百七十三条第一項に規定する期間を延長することができる。')
+    print(lis)
+# --------------------------------------------------------------------------------
 lis_article = None
 curr_chapter = None
 if sel_c in st.session_state.lis_chapter_title:
@@ -72,14 +96,28 @@ if sel_c in st.session_state.lis_chapter_title:
     # print(lis_article)
     sel_a = st.sidebar.selectbox("select article", lis_article)
     curr_chapter = c
+lis_rel_article = []
+sel_rel_article = None
 if sel_a in lis_article:
     idx = lis_article.index(sel_a)
     print(f'HA231203-b, {sel_a}, {idx}')
     # st.text(curr_chapter['articles'][idx])
     # https://docs.streamlit.io/library/components/components-api
     with st.expander('Expander 1', expanded=True):
-        components.html(str(curr_chapter['articles'][idx]['body']), height=200, scrolling=True)
-
+        body = curr_chapter['articles'][idx]['body']
+        components.html(str(body), height=200, scrolling=True)
+        # st.selectbox( "select related article", ("a", "b", "c") )
+        # print(body)
+        lis_rel_article = get_article_in_text( str(body), exclude=body.find('span').get_text() )
+        sel_rel_article = st.selectbox( "select related article", lis_rel_article )
+# print('sel_rel_article', sel_rel_article)
+if sel_rel_article is not None:
+    print('HA231203-c', 'sel_rel_article', sel_rel_article)
+    # print(list(st.session_state.dic_articles.keys()))
+    tmp_dic = st.session_state.dic_articles
+    if (sel_rel_article in tmp_dic.keys()):
+        with st.expander('Expander 2', expanded=True):
+            components.html(str(tmp_dic[sel_rel_article]), height=200, scrolling=True)
 
 # --------------------------------------------------------------------------------
 if False: #test

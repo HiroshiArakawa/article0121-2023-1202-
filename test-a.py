@@ -7,6 +7,10 @@ from bs4 import BeautifulSoup
 import streamlit as st
 import streamlit.components.v1 as components
 
+# https://qiita.com/papasim824/items/b6aef456644321af0010
+# https://github.com/joy13975/streamlit-nested-layout/tree/main
+import streamlit_nested_layout
+
 # WindowsのPython3で標準出力をUTF8にする
 # sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
@@ -73,7 +77,8 @@ if sel_a in lis_article:
     print(f'HA231203-b, {sel_a}, {idx}')
     # st.text(curr_chapter['articles'][idx])
     # https://docs.streamlit.io/library/components/components-api
-    components.html(str(curr_chapter['articles'][idx]['body']), height=200, scrolling=True)
+    with st.expander('Expander 1', expanded=True):
+        components.html(str(curr_chapter['articles'][idx]['body']), height=200, scrolling=True)
 
 
 # --------------------------------------------------------------------------------

@@ -190,6 +190,12 @@ def main():
     st.title("⚖️ 特許法条文閲覧・固有表現抽出システム")
     st.markdown("---")
     
+    # セッション状態の初期化
+    if 'selected_category' not in st.session_state:
+        st.session_state.selected_category = "すべて"
+    if 'category_selection_source' not in st.session_state:
+        st.session_state.category_selection_source = "radio"  # "radio" or "sidebar"
+    
     # データ読み込み
     with st.spinner("データを読み込み中..."):
         data = load_data()
@@ -266,14 +272,22 @@ def main():
                             'LEGAL_STATUS': '⚖️ 法的地位'
                         }
                         
-                        # ラジオボタンでカテゴリ選択
-                        selected_category = st.radio(
+                        # ラジオボタンでカテゴリ選択（セッション状態と連動）
+                        current_selection = st.radio(
                             "強調表示するカテゴリを選択:",
                             ["すべて"] + available_categories,
+                            index=(["すべて"] + available_categories).index(st.session_state.selected_category) if st.session_state.selected_category in (["すべて"] + available_categories) else 0,
                             format_func=lambda x: "🌈 すべてのカテゴリ" if x == "すべて" else category_names.get(x, x),
                             horizontal=True,
                             help="特定のカテゴリを選択すると、そのカテゴリの固有表現が強調表示されます"
                         )
+                        
+                        # ラジオボタンで選択された場合、セッション状態を更新
+                        if current_selection != st.session_state.selected_category:
+                            st.session_state.selected_category = current_selection
+                            st.session_state.category_selection_source = "radio"
+                        
+                        selected_category = st.session_state.selected_category
                         
                         # カテゴリ別クイック選択ボタン
                         st.markdown("**🚀 クイック選択:**")
@@ -288,15 +302,28 @@ def main():
                                         key=f"quick_{cat}",
                                         help=f"{category_names.get(cat, cat)}を強調表示"
                                     ):
-                                        selected_category = cat
+                                        st.session_state.selected_category = cat
+                                        st.session_state.category_selection_source = "quick_button"
+                                        st.rerun()
                         
                         # 選択されたカテゴリに応じてハイライト
                         highlight_category = None if selected_category == "すべて" else selected_category
                         highlighted_text = highlight_entities(article_text, selected_article['ner_entities'], highlight_category)
                         
                         st.markdown("#### 🎨 固有表現ハイライト表示")
+                        
+                        # 現在の選択状態を表示
                         if selected_category != "すべて":
-                            st.info(f"💡 {category_names.get(selected_category, selected_category)} が強調表示されています")
+                            source_icons = {
+                                "radio": "⚙️ 右パネル",
+                                "quick_button": "🚀 クイック選択", 
+                                "sidebar": "📊 左パネル"
+                            }
+                            source_text = source_icons.get(st.session_state.category_selection_source, "🔧 システム")
+                            st.info(f"💡 {category_names.get(selected_category, selected_category)} が強調表示中 (選択元: {source_text})")
+                        else:
+                            st.info("🌈 すべてのカテゴリが表示されています")
+                        
                         st.markdown(highlighted_text, unsafe_allow_html=True)
                         
                         # 原文も併記（折りたたみ表示）
@@ -397,31 +424,54 @@ def main():
                                 value=f"{count}個"
                             )
                         
-                        # 選択中条文の統計
+                        # 選択中条文の統計（クリック可能なカテゴリボタン）
                         if 'ner_entities' in selected_article:
-                            st.markdown("#### 選択中条文の固有表現")
+                            st.markdown("#### 📊 固有表現の種類 (クリックで強調)")
                             current_entities = selected_article['ner_entities']
                             total_current = sum(len(entities) for entities in current_entities.values())
-                            st.metric("合計", f"{total_current}個")
                             
-                            # カテゴリ別統計（選択されたカテゴリは強調表示）
+                            # 合計ボタン（すべて選択）
+                            if st.button(
+                                f"🌈 合計: {total_current}個",
+                                key="sidebar_all_categories",
+                                help="すべてのカテゴリを表示",
+                                type="primary" if st.session_state.selected_category == "すべて" else "secondary"
+                            ):
+                                st.session_state.selected_category = "すべて"
+                                st.session_state.category_selection_source = "sidebar"
+                                st.rerun()
+                            
+                            # カテゴリ名の日本語表示
+                            category_names = {
+                                'LAW_REFERENCE': '📚 法律参照',
+                                'ARTICLE_REFERENCE': '📋 条文参照', 
+                                'TIME_PERIOD': '⏰ 期間表現',
+                                'MONEY_AMOUNT': '💰 金額表現',
+                                'ORGANIZATION': '🏢 組織・機関',
+                                'PROCEDURE': '⚙️ 手続き関連',
+                                'LEGAL_STATUS': '⚖️ 法的地位'
+                            }
+                            
+                            # カテゴリ別クリック可能ボタン
                             for category, entities in current_entities.items():
                                 if entities:
-                                    category_display = category.replace('_', ' ')
-                                    # 選択されたカテゴリは強調表示
-                                    if 'selected_category' in locals() and category == selected_category:
-                                        st.markdown(f"**🎯 {category_display}** (選択中)")
-                                        st.metric(
-                                            label="",
-                                            value=f"{len(entities)}個",
-                                            delta=f"強調表示中",
-                                            delta_color="normal"
-                                        )
-                                    else:
-                                        st.metric(
-                                            label=category_display,
-                                            value=f"{len(entities)}個"
-                                        )
+                                    category_display = category_names.get(category, category.replace('_', ' '))
+                                    is_selected = (st.session_state.selected_category == category)
+                                    
+                                    button_type = "primary" if is_selected else "secondary"
+                                    button_text = f"{category_display}: {len(entities)}個"
+                                    if is_selected:
+                                        button_text = f"🎯 {button_text} (強調中)"
+                                    
+                                    if st.button(
+                                        button_text,
+                                        key=f"sidebar_{category}",
+                                        help=f"{category_display}を強調表示",
+                                        type=button_type
+                                    ):
+                                        st.session_state.selected_category = category
+                                        st.session_state.category_selection_source = "sidebar"
+                                        st.rerun()
                     else:
                         st.info("固有表現データが見つかりません。")
                 

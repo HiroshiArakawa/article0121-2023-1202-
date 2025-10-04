@@ -44,6 +44,86 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# カスタムCSS: 左パネル（サイドバー）のフォントサイズを小さくして見やすくする
+st.markdown("""
+<style>
+/* サイドバー全体のフォントサイズを小さく（複数バージョン対応） */
+.css-1d391kg, .css-1aumxhk, .st-emotion-cache-1aumxhk, section[data-testid="stSidebar"] {
+    font-size: 0.8rem;
+}
+
+/* サイドバーの見出し（h3）のフォントサイズ */
+.css-1d391kg h3, .css-1aumxhk h3, .st-emotion-cache-1aumxhk h3, section[data-testid="stSidebar"] h3 {
+    font-size: 1.0rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+/* サイドバーのselect boxのフォントサイズ */
+.css-1d391kg .stSelectbox, .css-1aumxhk .stSelectbox, section[data-testid="stSidebar"] .stSelectbox {
+    font-size: 0.8rem;
+}
+
+/* サイドバーのselect boxの選択肢フォントサイズ */
+.css-1d391kg .stSelectbox > div > div, section[data-testid="stSidebar"] .stSelectbox > div > div {
+    font-size: 0.8rem;
+}
+
+/* サイドバーのボタンのフォントサイズ */
+.css-1d391kg .stButton, .css-1aumxhk .stButton, section[data-testid="stSidebar"] .stButton {
+    font-size: 0.8rem;
+}
+
+/* サイドバーのボタンテキスト */
+.css-1d391kg button, .css-1aumxhk button, section[data-testid="stSidebar"] button {
+    font-size: 0.8rem !important;
+    padding: 0.25rem 0.5rem !important;
+    line-height: 1.2 !important;
+    margin: 0.1rem 0 !important;
+}
+
+/* サイドバーのメトリック表示 */
+.css-1d391kg .metric-container, .css-1aumxhk .metric-container, section[data-testid="stSidebar"] [data-testid="metric-container"] {
+    font-size: 0.8rem;
+}
+
+/* サイドバーの区切り線の間隔を狭く */
+.css-1d391kg hr, .css-1aumxhk hr, section[data-testid="stSidebar"] hr {
+    margin: 0.5rem 0;
+}
+
+/* サイドバーの段落の行間を狭く */
+.css-1d391kg p, .css-1aumxhk p, section[data-testid="stSidebar"] p {
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+}
+
+/* 固有表現凡例のカラーバッジを小さく */
+.css-1d391kg .stMarkdown div, .css-1aumxhk .stMarkdown div, section[data-testid="stSidebar"] .stMarkdown div {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    margin: 1px 0;
+}
+
+/* selectboxのラベルテキストも小さく */
+section[data-testid="stSidebar"] label {
+    font-size: 0.8rem !important;
+}
+
+/* サイドバー内のマークダウンテキスト */
+section[data-testid="stSidebar"] .stMarkdown {
+    font-size: 0.8rem;
+}
+
+/* コンパクトなボタンスタイル */
+section[data-testid="stSidebar"] button[kind="secondary"], 
+section[data-testid="stSidebar"] button[kind="primary"] {
+    min-height: 2rem !important;
+    padding: 0.2rem 0.5rem !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 @st.cache_data
 def load_data():
     """データ読み込み（キャッシュ付き）"""
@@ -219,10 +299,10 @@ def display_entity_legend(selected_article=None):
                 button_text += " (選択中)"
             button_text += f" ({entity_count}個)"
             
-            # カラーバッジと説明をHTMLで表示
+            # カラーバッジと説明をHTMLで表示（コンパクト版）
             badge_html = (
-                f'<div style="background-color: {color}; padding: 4px 8px; margin: 2px 0; '
-                f'border-radius: 3px; font-size: 11px; border: 1px solid {color}88; '
+                f'<div style="background-color: {color}; padding: 2px 6px; margin: 1px 0; '
+                f'border-radius: 2px; font-size: 10px; border: 1px solid {color}88; '
                 f'color: #333; display: inline-block; width: 100%; text-align: center;">'
                 f'<small>({category})</small></div>'
             )
@@ -239,10 +319,10 @@ def display_entity_legend(selected_article=None):
                 st.session_state.selected_category = category
                 st.session_state.category_selection_source = "legend"
         else:
-            # エンティティがない場合は無効なボタン（グレーアウト）
+            # エンティティがない場合は無効なボタン（グレーアウト、コンパクト版）
             badge_html = (
-                f'<div style="background-color: #f0f0f0; padding: 4px 8px; margin: 2px 0; '
-                f'border-radius: 3px; font-size: 11px; border: 1px solid #ddd; '
+                f'<div style="background-color: #f0f0f0; padding: 2px 6px; margin: 1px 0; '
+                f'border-radius: 2px; font-size: 10px; border: 1px solid #ddd; '
                 f'color: #999; display: inline-block; width: 100%; text-align: center;">'
                 f'<small>({category})</small></div>'
             )
@@ -257,8 +337,8 @@ def display_entity_legend(selected_article=None):
                 use_container_width=True
             )
         
-        # スペース追加
-        st.sidebar.markdown("")
+        # スペース追加（小さく）
+        st.sidebar.markdown('<div style="margin: 2px 0;"></div>', unsafe_allow_html=True)
 
 def main():
     st.title("⚖️ 特許法条文閲覧・固有表現抽出システム")

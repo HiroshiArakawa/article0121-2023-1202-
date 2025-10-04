@@ -92,36 +92,36 @@ def highlight_entities(text, entities):
         'LEGAL_STATUS': '#F0FFFF',       # 非常に薄いシアン
     }
     
-    # エンティティを位置順にソート（後ろから処理するため逆順）
+    # エンティティを収集し、テキスト長の降順でソート
     all_entities = []
     for category, entity_list in entities.items():
         for entity in entity_list:
-            all_entities.append({
-                'text': entity['text'],
-                'start': entity['start'],
-                'end': entity['end'],
-                'category': category
-            })
+            entity_text = entity['text']
+            if entity_text in text:  # テキスト内に存在する場合のみ
+                all_entities.append({
+                    'text': entity_text,
+                    'category': category
+                })
     
-    # 重複除去とソート
+    # 重複除去（同じテキストは1回のみ）
     unique_entities = []
-    seen_positions = set()
+    seen_texts = set()
     for entity in all_entities:
-        pos_key = (entity['start'], entity['end'])
-        if pos_key not in seen_positions:
+        if entity['text'] not in seen_texts:
             unique_entities.append(entity)
-            seen_positions.add(pos_key)
+            seen_texts.add(entity['text'])
     
-    unique_entities.sort(key=lambda x: x['start'], reverse=True)
+    # テキスト長の降順でソート（長い表現を先に処理）
+    unique_entities.sort(key=lambda x: len(x['text']), reverse=True)
     
-    # ハイライト処理（安全な範囲チェック付き）
+    # ハイライト処理
     highlighted_text = text
     for entity in unique_entities:
         color = colors.get(entity['category'], '#F5F5F5')
-        start, end = entity['start'], entity['end']
+        entity_text = entity['text']
         
-        if 0 <= start < len(highlighted_text) and start < end <= len(highlighted_text):
-            entity_text = highlighted_text[start:end]
+        # 既にハイライトされていないかチェック
+        if entity_text in highlighted_text and highlighted_text.count(f'>{entity_text}<') == 0:
             # カテゴリ名を日本語で表示
             category_jp = {
                 'LAW_REFERENCE': '法律参照',
@@ -140,7 +140,9 @@ def highlight_entities(text, entities):
                 f'title="{category_jp}: {entity_text}">'
                 f'{entity_text}</span>'
             )
-            highlighted_text = highlighted_text[:start] + highlighted_part + highlighted_text[end:]
+            
+            # 最初の出現箇所のみ置換
+            highlighted_text = highlighted_text.replace(entity_text, highlighted_part, 1)
     
     return highlighted_text
 

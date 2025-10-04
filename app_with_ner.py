@@ -76,13 +76,13 @@ def load_ner_csv():
             except FileNotFoundError:
                 return pd.DataFrame()
 
-def highlight_entities(text, entities):
-    """テキスト中の固有表現をハイライト（改善版）"""
+def highlight_entities(text, entities, selected_category=None):
+    """テキスト中の固有表現をハイライト（カテゴリ選択対応版）"""
     if not entities:
         return text
     
-    # エンティティの色分け（よりソフトな色合い）
-    colors = {
+    # エンティティの色分け（通常とハイライト用）
+    normal_colors = {
         'LAW_REFERENCE': '#FFF2F2',      # 非常に薄い赤
         'ARTICLE_REFERENCE': '#F0F8FF',  # 非常に薄い青
         'TIME_PERIOD': '#F0FFF0',        # 非常に薄い緑
@@ -90,6 +90,17 @@ def highlight_entities(text, entities):
         'ORGANIZATION': '#F8F0FF',       # 非常に薄い紫
         'PROCEDURE': '#FFF0F8',          # 非常に薄いピンク
         'LEGAL_STATUS': '#F0FFFF',       # 非常に薄いシアン
+    }
+    
+    # 選択されたカテゴリ用の強調色
+    highlight_colors = {
+        'LAW_REFERENCE': '#FFB6C1',      # 濃いピンク
+        'ARTICLE_REFERENCE': '#87CEEB',  # 濃い空色
+        'TIME_PERIOD': '#98FB98',        # 濃い薄緑
+        'MONEY_AMOUNT': '#F0E68C',       # 濃い黄色
+        'ORGANIZATION': '#DDA0DD',       # 濃い薄紫
+        'PROCEDURE': '#FFB6C1',          # 濃いピンク
+        'LEGAL_STATUS': '#AFEEEE',       # 濃いシアン
     }
     
     # エンティティを収集し、テキスト長の降順でソート
@@ -117,7 +128,13 @@ def highlight_entities(text, entities):
     # ハイライト処理
     highlighted_text = text
     for entity in unique_entities:
-        color = colors.get(entity['category'], '#F5F5F5')
+        # カテゴリが選択されている場合は強調色、そうでなければ通常色を使用
+        if selected_category and entity['category'] == selected_category:
+            color = highlight_colors.get(entity['category'], '#FFD700')  # ゴールド色
+            border_style = "border: 2px solid #FF6B6B; box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);"
+        else:
+            color = normal_colors.get(entity['category'], '#F5F5F5')
+            border_style = ""
         entity_text = entity['text']
         
         # 既にハイライトされていないかチェック
@@ -136,7 +153,7 @@ def highlight_entities(text, entities):
             highlighted_part = (
                 f'<span style="background-color: {color}; '
                 f'padding: 1px 3px; margin: 0 1px; border-radius: 3px; '
-                f'font-weight: 500; border: 1px solid {color}88;" '
+                f'font-weight: 500; border: 1px solid {color}88; {border_style}" '
                 f'title="{category_jp}: {entity_text}">'
                 f'{entity_text}</span>'
             )
@@ -235,9 +252,51 @@ def main():
                     )
                     
                     if display_mode == "ハイライト表示" and 'ner_entities' in selected_article:
-                        # ハイライト表示
-                        highlighted_text = highlight_entities(article_text, selected_article['ner_entities'])
+                        # カテゴリ選択機能を追加
+                        st.markdown("#### 🎯 固有表現カテゴリ選択")
+                        
+                        available_categories = list(selected_article['ner_entities'].keys())
+                        category_names = {
+                            'LAW_REFERENCE': '📚 法律参照',
+                            'ARTICLE_REFERENCE': '📋 条文参照', 
+                            'TIME_PERIOD': '⏰ 期間表現',
+                            'MONEY_AMOUNT': '💰 金額表現',
+                            'ORGANIZATION': '🏢 組織・機関',
+                            'PROCEDURE': '⚙️ 手続き関連',
+                            'LEGAL_STATUS': '⚖️ 法的地位'
+                        }
+                        
+                        # ラジオボタンでカテゴリ選択
+                        selected_category = st.radio(
+                            "強調表示するカテゴリを選択:",
+                            ["すべて"] + available_categories,
+                            format_func=lambda x: "🌈 すべてのカテゴリ" if x == "すべて" else category_names.get(x, x),
+                            horizontal=True,
+                            help="特定のカテゴリを選択すると、そのカテゴリの固有表現が強調表示されます"
+                        )
+                        
+                        # カテゴリ別クイック選択ボタン
+                        st.markdown("**🚀 クイック選択:**")
+                        cols = st.columns(4)
+                        quick_categories = ['TIME_PERIOD', 'LAW_REFERENCE', 'ARTICLE_REFERENCE', 'ORGANIZATION']
+                        
+                        for i, cat in enumerate(quick_categories):
+                            if cat in available_categories:
+                                with cols[i % 4]:
+                                    if st.button(
+                                        f"{category_names.get(cat, cat)}\n({len(selected_article['ner_entities'][cat])}個)",
+                                        key=f"quick_{cat}",
+                                        help=f"{category_names.get(cat, cat)}を強調表示"
+                                    ):
+                                        selected_category = cat
+                        
+                        # 選択されたカテゴリに応じてハイライト
+                        highlight_category = None if selected_category == "すべて" else selected_category
+                        highlighted_text = highlight_entities(article_text, selected_article['ner_entities'], highlight_category)
+                        
                         st.markdown("#### 🎨 固有表現ハイライト表示")
+                        if selected_category != "すべて":
+                            st.info(f"💡 {category_names.get(selected_category, selected_category)} が強調表示されています")
                         st.markdown(highlighted_text, unsafe_allow_html=True)
                         
                         # 原文も併記（折りたたみ表示）
@@ -345,12 +404,24 @@ def main():
                             total_current = sum(len(entities) for entities in current_entities.values())
                             st.metric("合計", f"{total_current}個")
                             
+                            # カテゴリ別統計（選択されたカテゴリは強調表示）
                             for category, entities in current_entities.items():
                                 if entities:
-                                    st.metric(
-                                        label=category.replace('_', ' '),
-                                        value=f"{len(entities)}個"
-                                    )
+                                    category_display = category.replace('_', ' ')
+                                    # 選択されたカテゴリは強調表示
+                                    if 'selected_category' in locals() and category == selected_category:
+                                        st.markdown(f"**🎯 {category_display}** (選択中)")
+                                        st.metric(
+                                            label="",
+                                            value=f"{len(entities)}個",
+                                            delta=f"強調表示中",
+                                            delta_color="normal"
+                                        )
+                                    else:
+                                        st.metric(
+                                            label=category_display,
+                                            value=f"{len(entities)}個"
+                                        )
                     else:
                         st.info("固有表現データが見つかりません。")
                 

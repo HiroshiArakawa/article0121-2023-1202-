@@ -163,28 +163,102 @@ def highlight_entities(text, entities, selected_category=None):
     
     return highlighted_text
 
-def display_entity_legend():
-    """固有表現の凡例を表示"""
-    st.sidebar.markdown("### 🏷️ 固有表現の種類")
+def display_entity_legend(selected_article=None):
+    """クリック可能な固有表現凡例を表示"""
+    st.sidebar.markdown("### 🏷️ 固有表現の種類 (クリックで選択)")
+    
+    # セッション状態から条文データを取得
+    if selected_article is None and 'current_article' in st.session_state:
+        selected_article = st.session_state.current_article
     
     legend_items = [
-        ('LAW_REFERENCE', '法律参照', '#FFF2F2'),
-        ('ARTICLE_REFERENCE', '条文参照', '#F0F8FF'),
-        ('TIME_PERIOD', '期間表現', '#F0FFF0'),
-        ('MONEY_AMOUNT', '金額表現', '#FFFEF0'),
-        ('ORGANIZATION', '組織・機関', '#F8F0FF'),
-        ('PROCEDURE', '手続き関連', '#FFF0F8'),
-        ('LEGAL_STATUS', '法的地位・状態', '#F0FFFF'),
+        ('LAW_REFERENCE', '📚 法律参照', '#FFF2F2'),
+        ('ARTICLE_REFERENCE', '📋 条文参照', '#F0F8FF'),
+        ('TIME_PERIOD', '⏰ 期間表現', '#F0FFF0'),
+        ('MONEY_AMOUNT', '💰 金額表現', '#FFFEF0'),
+        ('ORGANIZATION', '🏢 組織・機関', '#F8F0FF'),
+        ('PROCEDURE', '⚙️ 手続き関連', '#FFF0F8'),
+        ('LEGAL_STATUS', '⚖️ 法的地位・状態', '#F0FFFF'),
     ]
     
+    # 「すべて」ボタン
+    is_all_selected = (st.session_state.selected_category == "すべて")
+    all_button_style = "primary" if is_all_selected else "secondary"
+    all_button_text = "🌈 すべてのカテゴリ" + (" (選択中)" if is_all_selected else "")
+    
+    if st.sidebar.button(
+        all_button_text,
+        key="legend_all_categories",
+        help="すべてのカテゴリを表示",
+        type=all_button_style,
+        use_container_width=True
+    ):
+        st.session_state.selected_category = "すべて"
+        st.session_state.category_selection_source = "legend"
+    
+    st.sidebar.markdown("---")
+    
+    # 各カテゴリの凡例とボタン
     for category, description, color in legend_items:
-        st.sidebar.markdown(
-            f'<div style="background-color: {color}; padding: 6px 10px; margin: 3px 0; '
-            f'border-radius: 5px; font-size: 13px; border: 1px solid {color}88;">'
-            f'<strong>{description}</strong><br>'
-            f'<small style="color: #666;">({category})</small></div>',
-            unsafe_allow_html=True
-        )
+        # 選択中の条文にこのカテゴリが存在するかチェック
+        has_entities = False
+        entity_count = 0
+        if selected_article and 'ner_entities' in selected_article:
+            if category in selected_article['ner_entities'] and selected_article['ner_entities'][category]:
+                has_entities = True
+                entity_count = len(selected_article['ner_entities'][category])
+        
+        # 選択状態の確認
+        is_selected = (st.session_state.selected_category == category)
+        
+        # ボタンのスタイルとテキスト
+        if has_entities:
+            button_type = "primary" if is_selected else "secondary"
+            button_text = f"{description}"
+            if is_selected:
+                button_text += " (選択中)"
+            button_text += f" ({entity_count}個)"
+            
+            # カラーバッジと説明をHTMLで表示
+            badge_html = (
+                f'<div style="background-color: {color}; padding: 4px 8px; margin: 2px 0; '
+                f'border-radius: 3px; font-size: 11px; border: 1px solid {color}88; '
+                f'color: #333; display: inline-block; width: 100%; text-align: center;">'
+                f'<small>({category})</small></div>'
+            )
+            st.sidebar.markdown(badge_html, unsafe_allow_html=True)
+            
+            # クリック可能なボタン
+            if st.sidebar.button(
+                button_text,
+                key=f"legend_{category}",
+                help=f"{description}を強調表示",
+                type=button_type,
+                use_container_width=True
+            ):
+                st.session_state.selected_category = category
+                st.session_state.category_selection_source = "legend"
+        else:
+            # エンティティがない場合は無効なボタン（グレーアウト）
+            badge_html = (
+                f'<div style="background-color: #f0f0f0; padding: 4px 8px; margin: 2px 0; '
+                f'border-radius: 3px; font-size: 11px; border: 1px solid #ddd; '
+                f'color: #999; display: inline-block; width: 100%; text-align: center;">'
+                f'<small>({category})</small></div>'
+            )
+            st.sidebar.markdown(badge_html, unsafe_allow_html=True)
+            
+            # 無効なボタン
+            st.sidebar.button(
+                f"{description} (0個)",
+                key=f"legend_{category}_disabled",
+                help="この条文にはこのカテゴリの固有表現がありません",
+                disabled=True,
+                use_container_width=True
+            )
+        
+        # スペース追加
+        st.sidebar.markdown("")
 
 def main():
     st.title("⚖️ 特許法条文閲覧・固有表現抽出システム")
@@ -195,6 +269,12 @@ def main():
         st.session_state.selected_category = "すべて"
     if 'category_selection_source' not in st.session_state:
         st.session_state.category_selection_source = "radio"  # "radio" or "sidebar"
+    if 'selected_article_idx' not in st.session_state:
+        st.session_state.selected_article_idx = 0  # デフォルトは0番目（1条）
+    
+    # 章ごとの条文選択インデックスを管理するための初期化
+    # この方式により、章を切り替えても各章の最後に選択した条文を覚えている
+    # そして左パネルのカテゴリボタンをクリックしても条文選択が変わらない
     
     # データ読み込み
     with st.spinner("データを読み込み中..."):
@@ -204,9 +284,6 @@ def main():
     if not data:
         st.error("データの読み込みに失敗しました。")
         return
-    
-    # サイドバー: 固有表現の凡例
-    display_entity_legend()
     
     # サイドバー: 章選択
     st.sidebar.markdown("### 📖 章選択")
@@ -230,14 +307,40 @@ def main():
                 title = article.get('title', article.get('heading', f'条文{i+1}'))
                 article_titles.append(f"{i+1}. {title}")
             
+            # セッション状態のキーでインデックスを管理
+            if f'chapter_{selected_chapter_idx}_article_idx' not in st.session_state:
+                st.session_state[f'chapter_{selected_chapter_idx}_article_idx'] = 0
+            
+            current_article_idx = st.session_state[f'chapter_{selected_chapter_idx}_article_idx']
+            
+            # インデックスの範囲チェック
+            if current_article_idx >= len(article_titles):
+                current_article_idx = 0
+                st.session_state[f'chapter_{selected_chapter_idx}_article_idx'] = 0
+            
             selected_article_idx = st.sidebar.selectbox(
                 "条文を選択してください:",
                 range(len(article_titles)),
-                format_func=lambda x: article_titles[x]
+                format_func=lambda x: article_titles[x],
+                index=current_article_idx,
+                key=f"article_selector_chapter_{selected_chapter_idx}"
             )
+            
+            # 選択が変更された場合はセッション状態を更新
+            if selected_article_idx != current_article_idx:
+                st.session_state[f'chapter_{selected_chapter_idx}_article_idx'] = selected_article_idx
+                st.session_state.selected_article_idx = selected_article_idx  # 互換性のため保持
+            else:
+                st.session_state.selected_article_idx = current_article_idx
             
             if selected_article_idx is not None:
                 selected_article = articles[selected_article_idx]
+                
+                # 選択中の条文をセッション状態に保存
+                st.session_state.current_article = selected_article
+                
+                # サイドバー: 固有表現の凡例（条文選択後に表示）
+                display_entity_legend(selected_article)
                 
                 # メインコンテンツ表示
                 col1, col2 = st.columns([2, 1])
@@ -304,7 +407,6 @@ def main():
                                     ):
                                         st.session_state.selected_category = cat
                                         st.session_state.category_selection_source = "quick_button"
-                                        st.rerun()
                         
                         # 選択されたカテゴリに応じてハイライト
                         highlight_category = None if selected_category == "すべて" else selected_category
@@ -317,7 +419,8 @@ def main():
                             source_icons = {
                                 "radio": "⚙️ 右パネル",
                                 "quick_button": "🚀 クイック選択", 
-                                "sidebar": "📊 左パネル"
+                                "sidebar": "📊 右パネル統計",
+                                "legend": "🏷️ 左パネル凡例"
                             }
                             source_text = source_icons.get(st.session_state.category_selection_source, "🔧 システム")
                             st.info(f"💡 {category_names.get(selected_category, selected_category)} が強調表示中 (選択元: {source_text})")
@@ -415,7 +518,7 @@ def main():
                     
                     if not ner_df.empty:
                         # 全体統計
-                        st.markdown("#### 全体の固有表現統計")
+                        st.markdown("#### 📈 全体の固有表現統計")
                         category_counts = ner_df['category'].value_counts()
                         
                         for category, count in category_counts.items():
@@ -424,22 +527,13 @@ def main():
                                 value=f"{count}個"
                             )
                         
-                        # 選択中条文の統計（クリック可能なカテゴリボタン）
+                        # 選択中条文の統計情報（読み取り専用）
                         if 'ner_entities' in selected_article:
-                            st.markdown("#### 📊 固有表現の種類 (クリックで強調)")
+                            st.markdown("#### 📊 現在の条文の固有表現")
                             current_entities = selected_article['ner_entities']
                             total_current = sum(len(entities) for entities in current_entities.values())
                             
-                            # 合計ボタン（すべて選択）
-                            if st.button(
-                                f"🌈 合計: {total_current}個",
-                                key="sidebar_all_categories",
-                                help="すべてのカテゴリを表示",
-                                type="primary" if st.session_state.selected_category == "すべて" else "secondary"
-                            ):
-                                st.session_state.selected_category = "すべて"
-                                st.session_state.category_selection_source = "sidebar"
-                                st.rerun()
+                            st.metric("合計", f"{total_current}個")
                             
                             # カテゴリ名の日本語表示
                             category_names = {
@@ -452,26 +546,26 @@ def main():
                                 'LEGAL_STATUS': '⚖️ 法的地位'
                             }
                             
-                            # カテゴリ別クリック可能ボタン
+                            # カテゴリ別表示（メトリック形式、クリック不可）
                             for category, entities in current_entities.items():
                                 if entities:
                                     category_display = category_names.get(category, category.replace('_', ' '))
                                     is_selected = (st.session_state.selected_category == category)
                                     
-                                    button_type = "primary" if is_selected else "secondary"
-                                    button_text = f"{category_display}: {len(entities)}個"
+                                    # 選択中の場合は特別な表示
                                     if is_selected:
-                                        button_text = f"🎯 {button_text} (強調中)"
-                                    
-                                    if st.button(
-                                        button_text,
-                                        key=f"sidebar_{category}",
-                                        help=f"{category_display}を強調表示",
-                                        type=button_type
-                                    ):
-                                        st.session_state.selected_category = category
-                                        st.session_state.category_selection_source = "sidebar"
-                                        st.rerun()
+                                        st.metric(
+                                            f"🎯 {category_display} (強調中)",
+                                            f"{len(entities)}個"
+                                        )
+                                    else:
+                                        st.metric(
+                                            category_display,
+                                            f"{len(entities)}個"
+                                        )
+                            
+                            # カテゴリ選択のヒント
+                            st.info("💡 カテゴリを選択するには左パネルまたは上記のクイック選択ボタンをご利用ください")
                     else:
                         st.info("固有表現データが見つかりません。")
                 

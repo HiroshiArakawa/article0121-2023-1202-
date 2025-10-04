@@ -142,6 +142,123 @@ section[data-testid="stSidebar"] button[kind="primary"] {
     font-weight: bold !important;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
 }
+
+/* 右ペイン第２カラムのフォントサイズを小さく */
+[data-testid="column"]:last-child {
+    font-size: 0.6rem;
+}
+
+/* より具体的なカラム選択（複数の方法でターゲット） */
+.main .block-container [data-testid="column"]:nth-child(2),
+.stApp [data-testid="column"]:nth-child(2),
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) {
+    font-size: 0.6rem !important;
+}
+
+/* 右ペイン第２カラムの見出し（複数セレクタで確実に適用） */
+[data-testid="column"]:last-child h1,
+[data-testid="column"]:last-child h2,
+[data-testid="column"]:last-child h3,
+[data-testid="column"]:last-child h4,
+[data-testid="column"]:last-child .stMarkdown h1,
+[data-testid="column"]:last-child .stMarkdown h2,
+[data-testid="column"]:last-child .stMarkdown h3,
+[data-testid="column"]:last-child .stMarkdown h4,
+.main .block-container [data-testid="column"]:nth-child(2) h1,
+.main .block-container [data-testid="column"]:nth-child(2) h2,
+.main .block-container [data-testid="column"]:nth-child(2) h3,
+.main .block-container [data-testid="column"]:nth-child(2) h4,
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) h1,
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) h2,
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) h3,
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) h4 {
+    font-size: 0.65rem !important;
+    margin-bottom: 0.3rem !important;
+    margin-top: 0.3rem !important;
+    line-height: 1.2 !important;
+}
+
+/* Streamlitの見出しコンポーネント */
+[data-testid="column"]:last-child [data-testid="stHeader"],
+[data-testid="column"]:last-child [data-testid="stSubheader"],
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="stHeader"],
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="stSubheader"] {
+    font-size: 0.65rem !important;
+}
+
+/* 右ペイン第２カラムのメトリック表示 */
+[data-testid="column"]:last-child [data-testid="metric-container"],
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="metric-container"] {
+    font-size: 0.5rem !important;
+    padding: 0.2rem !important;
+}
+
+/* 右ペイン第２カラムのメトリックラベル */
+[data-testid="column"]:last-child [data-testid="metric-container"] label,
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="metric-container"] label {
+    font-size: 0.5rem !important;
+}
+
+/* 右ペイン第２カラムのメトリック値 */
+[data-testid="column"]:last-child [data-testid="metric-container"] [data-testid="metric-value"],
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="metric-container"] [data-testid="metric-value"] {
+    font-size: 0.55rem !important;
+}
+
+/* 右ペイン第２カラムの一般的なテキスト */
+[data-testid="column"]:last-child p,
+[data-testid="column"]:last-child div,
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) p,
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) div {
+    font-size: 0.6rem !important;
+    line-height: 1.2 !important;
+    margin-bottom: 0.2rem !important;
+}
+
+/* 右ペイン第２カラムのマークダウン */
+[data-testid="column"]:last-child .stMarkdown,
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) .stMarkdown {
+    font-size: 0.6rem !important;
+}
+
+/* 右ペイン第２カラムの情報ボックス */
+[data-testid="column"]:last-child .stAlert,
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) .stAlert {
+    font-size: 0.5rem !important;
+    padding: 0.3rem !important;
+    margin: 0.2rem 0 !important;
+}
+
+/* 右ペイン第２カラムのコンパクト表示 */
+[data-testid="column"]:last-child *,
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) * {
+    margin-top: 0.1rem !important;
+    margin-bottom: 0.1rem !important;
+}
+
+/* より強力なセレクタで見出しを確実に小さくする */
+[data-testid="column"]:last-child *,
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) * {
+    font-size: inherit !important;
+}
+
+/* 最終的な強制適用 */
+[data-testid="column"]:last-child h1,
+[data-testid="column"]:last-child h2,
+[data-testid="column"]:last-child h3,
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) h1,
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) h2,
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) h3 {
+    font-size: 0.65rem !important;
+    font-weight: bold !important;
+}
+
+/* 特別な対策：統計情報の見出しを確実に変更 */
+h2:contains("📊 統計情報"),
+h3:contains("📊 統計情報"),
+h4:contains("📊 統計情報") {
+    font-size: 0.65rem !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -486,7 +603,7 @@ def main():
                 display_entity_legend(selected_article)
                 
                 # メインコンテンツ表示
-                col1, col2 = st.columns([2, 1])
+                col1, col2 = st.columns([3, 0.864])
                 
                 with col1:
                     # 条文表示
@@ -495,19 +612,14 @@ def main():
                     
                     article_text = get_article_text(selected_article)
                     
-                    # 表示モード選択（デフォルト：ハイライト表示）
-                    display_mode = st.radio(
-                        "表示モード:",
-                        ["ハイライト表示", "原文表示"],
-                        index=0,  # デフォルトでハイライト表示を選択
-                        horizontal=True,
-                        help="ハイライト表示：固有表現をカラーハイライト / 原文表示：元のテキストをそのまま表示"
-                    )
+                    # デフォルトでハイライト表示を設定
+                    if 'display_mode' not in st.session_state:
+                        st.session_state.display_mode = "ハイライト表示"
+                    
+                    display_mode = st.session_state.display_mode
                     
                     if display_mode == "ハイライト表示" and 'ner_entities' in selected_article:
-                        # カテゴリ選択機能を追加
-                        st.markdown("#### 🎯 固有表現カテゴリ選択")
-                        
+                        # まず固有表現ハイライト表示
                         available_categories = list(selected_article['ner_entities'].keys())
                         category_names = {
                             'LAW_REFERENCE': '📚 法律参照',
@@ -519,38 +631,7 @@ def main():
                             'LEGAL_STATUS': '⚖️ 法的地位'
                         }
                         
-                        # ラジオボタンでカテゴリ選択（セッション状態と連動）
-                        current_selection = st.radio(
-                            "強調表示するカテゴリを選択:",
-                            ["すべて"] + available_categories,
-                            index=(["すべて"] + available_categories).index(st.session_state.selected_category) if st.session_state.selected_category in (["すべて"] + available_categories) else 0,
-                            format_func=lambda x: "🌈 すべてのカテゴリ" if x == "すべて" else category_names.get(x, x),
-                            horizontal=True,
-                            help="特定のカテゴリを選択すると、そのカテゴリの固有表現が強調表示されます"
-                        )
-                        
-                        # ラジオボタンで選択された場合、セッション状態を更新
-                        if current_selection != st.session_state.selected_category:
-                            st.session_state.selected_category = current_selection
-                            st.session_state.category_selection_source = "radio"
-                        
                         selected_category = st.session_state.selected_category
-                        
-                        # カテゴリ別クイック選択ボタン
-                        st.markdown("**🚀 クイック選択:**")
-                        cols = st.columns(4)
-                        quick_categories = ['TIME_PERIOD', 'LAW_REFERENCE', 'ARTICLE_REFERENCE', 'ORGANIZATION']
-                        
-                        for i, cat in enumerate(quick_categories):
-                            if cat in available_categories:
-                                with cols[i % 4]:
-                                    if st.button(
-                                        f"{category_names.get(cat, cat)}\n({len(selected_article['ner_entities'][cat])}個)",
-                                        key=f"quick_{cat}",
-                                        help=f"{category_names.get(cat, cat)}を強調表示"
-                                    ):
-                                        st.session_state.selected_category = cat
-                                        st.session_state.category_selection_source = "quick_button"
                         
                         # 選択されたカテゴリに応じてハイライト（「すべて」の場合はそのまま渡す）
                         highlight_category = selected_category
@@ -561,8 +642,9 @@ def main():
                         # 現在の選択状態を表示
                         if selected_category != "すべて":
                             source_icons = {
-                                "radio": "⚙️ 右パネル",
+                                "radio": "⚙️ カテゴリ選択",
                                 "quick_button": "🚀 クイック選択", 
+                                "quick_button_right": "🚀 右パネルクイック選択", 
                                 "sidebar": "📊 右パネル統計",
                                 "legend": "🏷️ 左パネル凡例"
                             }
@@ -581,6 +663,24 @@ def main():
                                 height=200,
                                 disabled=True
                             )
+                        
+                        # カテゴリ選択機能を下に移動
+                        st.markdown("#### 🎯 固有表現カテゴリ選択")
+                        
+                        # ラジオボタンでカテゴリ選択（セッション状態と連動）
+                        current_selection = st.radio(
+                            "強調表示するカテゴリを選択:",
+                            ["すべて"] + available_categories,
+                            index=(["すべて"] + available_categories).index(st.session_state.selected_category) if st.session_state.selected_category in (["すべて"] + available_categories) else 0,
+                            format_func=lambda x: "🌈 すべてのカテゴリ" if x == "すべて" else category_names.get(x, x),
+                            horizontal=True,
+                            help="特定のカテゴリを選択すると、そのカテゴリの固有表現が強調表示されます"
+                        )
+                        
+                        # ラジオボタンで選択された場合、セッション状態を更新
+                        if current_selection != st.session_state.selected_category:
+                            st.session_state.selected_category = current_selection
+                            st.session_state.category_selection_source = "radio"
                     else:
                         # 原文表示（デフォルト）
                         st.markdown("#### 📝 原文")
@@ -653,14 +753,128 @@ def main():
                                     st.info(f"「{search_term}」に関連する固有表現は見つかりませんでした")
                     else:
                         st.info("この条文には固有表現解析データがありません。")
+                    
+                    # 表示モード選択を一番下に移動
+                    st.markdown("---")
+                    st.markdown("#### ⚙️ 表示設定")
+                    display_mode = st.radio(
+                        "表示モード:",
+                        ["ハイライト表示", "原文表示"],
+                        index=0 if st.session_state.display_mode == "ハイライト表示" else 1,
+                        horizontal=True,
+                        help="ハイライト表示：固有表現をカラーハイライト / 原文表示：元のテキストをそのまま表示",
+                        key="display_mode_selector"
+                    )
+                    
+                    # 表示モードが変更された場合はセッション状態を更新して再実行
+                    if display_mode != st.session_state.display_mode:
+                        st.session_state.display_mode = display_mode
+                        st.rerun()
                 
                 with col2:
-                    # 統計情報表示
-                    st.subheader("📊 統計情報")
+                    # 右ペインのコンパクトスタイルを直接適用（強力な優先度で上書き）
+                    st.markdown("""
+                    <style>
+                    /* 右ペイン第２カラムのサイズを強制的に2倍に設定 */
+                    .stApp [data-testid="column"]:nth-child(2),
+                    [data-testid="column"]:last-child,
+                    div[data-testid="stHorizontalBlock"] > div:nth-child(2) {
+                        font-size: 1.2rem !important;
+                    }
+                    
+                    .stApp [data-testid="column"]:nth-child(2) h1,
+                    .stApp [data-testid="column"]:nth-child(2) h2,
+                    .stApp [data-testid="column"]:nth-child(2) h3,
+                    .stApp [data-testid="column"]:nth-child(2) h4,
+                    [data-testid="column"]:last-child h1,
+                    [data-testid="column"]:last-child h2,
+                    [data-testid="column"]:last-child h3,
+                    [data-testid="column"]:last-child h4,
+                    div[data-testid="stHorizontalBlock"] > div:nth-child(2) h1,
+                    div[data-testid="stHorizontalBlock"] > div:nth-child(2) h2,
+                    div[data-testid="stHorizontalBlock"] > div:nth-child(2) h3,
+                    div[data-testid="stHorizontalBlock"] > div:nth-child(2) h4 {
+                        font-size: 1.3rem !important;
+                        margin: 0.6rem 0 !important;
+                    }
+                    
+                    .stApp [data-testid="column"]:nth-child(2) [data-testid="metric-container"],
+                    [data-testid="column"]:last-child [data-testid="metric-container"],
+                    div[data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="metric-container"] {
+                        font-size: 1.0rem !important;
+                        padding: 0.4rem !important;
+                    }
+                    
+                    .stApp [data-testid="column"]:nth-child(2) [data-testid="metric-container"] label,
+                    [data-testid="column"]:last-child [data-testid="metric-container"] label,
+                    div[data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="metric-container"] label {
+                        font-size: 1.0rem !important;
+                    }
+                    
+                    .stApp [data-testid="column"]:nth-child(2) [data-testid="metric-container"] [data-testid="metric-value"],
+                    [data-testid="column"]:last-child [data-testid="metric-container"] [data-testid="metric-value"],
+                    div[data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="metric-container"] [data-testid="metric-value"] {
+                        font-size: 1.1rem !important;
+                    }
+                    
+                    .stApp [data-testid="column"]:nth-child(2) .stAlert,
+                    [data-testid="column"]:last-child .stAlert,
+                    div[data-testid="stHorizontalBlock"] > div:nth-child(2) .stAlert {
+                        font-size: 1.0rem !important;
+                        padding: 0.6rem !important;
+                    }
+                    
+                    .stApp [data-testid="column"]:nth-child(2) p,
+                    .stApp [data-testid="column"]:nth-child(2) div,
+                    [data-testid="column"]:last-child p,
+                    [data-testid="column"]:last-child div,
+                    div[data-testid="stHorizontalBlock"] > div:nth-child(2) p,
+                    div[data-testid="stHorizontalBlock"] > div:nth-child(2) div {
+                        font-size: 1.2rem !important;
+                        line-height: 1.4 !important;
+                    }
+                    </style>
+                    """, unsafe_allow_html=True)
+                    
+                    # 統計情報表示（スタイル直接適用、さらに大きく）
+                    
+                    # クイック選択ボタンを右ペインの上部に配置
+                    if 'ner_entities' in selected_article:
+                        st.markdown('<div style="font-size: 1.2rem !important; font-weight: bold; margin: 0.4rem 0; color: #ff6b35;">🚀 クイック選択</div>', unsafe_allow_html=True)
+                        
+                        available_categories = list(selected_article['ner_entities'].keys())
+                        category_names = {
+                            'LAW_REFERENCE': '📚 法律参照',
+                            'ARTICLE_REFERENCE': '📋 条文参照', 
+                            'TIME_PERIOD': '⏰ 期間表現',
+                            'MONEY_AMOUNT': '💰 金額表現',
+                            'ORGANIZATION': '🏢 組織・機関',
+                            'PROCEDURE': '⚙️ 手続き関連',
+                            'LEGAL_STATUS': '⚖️ 法的地位'
+                        }
+                        
+                        quick_categories = ['TIME_PERIOD', 'LAW_REFERENCE', 'ARTICLE_REFERENCE', 'ORGANIZATION']
+                        
+                        for cat in quick_categories:
+                            if cat in available_categories:
+                                if st.button(
+                                    f"{category_names.get(cat, cat)} ({len(selected_article['ner_entities'][cat])}個)",
+                                    key=f"quick_right_{cat}",
+                                    help=f"{category_names.get(cat, cat)}を強調表示",
+                                    use_container_width=True
+                                ):
+                                    st.session_state.selected_category = cat
+                                    st.session_state.category_selection_source = "quick_button_right"
+                                    st.rerun()
+                        
+                        # 区切り線
+                        st.markdown("---")
+                    
+                    st.markdown('<div style="font-size: 1.3rem !important; font-weight: bold; margin: 0.6rem 0; color: #1f77b4;">📊 統計情報</div>', unsafe_allow_html=True)
                     
                     if not ner_df.empty:
                         # 全体統計
-                        st.markdown("#### 📈 全体の固有表現統計")
+                        st.markdown('<div style="font-size: 1.2rem !important; font-weight: bold; margin: 0.4rem 0; color: #2e7d32;">📈 全体の固有表現統計</div>', unsafe_allow_html=True)
                         category_counts = ner_df['category'].value_counts()
                         
                         for category, count in category_counts.items():
@@ -671,7 +885,7 @@ def main():
                         
                         # 選択中条文の統計情報（読み取り専用）
                         if 'ner_entities' in selected_article:
-                            st.markdown("#### 📊 現在の条文の固有表現")
+                            st.markdown('<div style="font-size: 1.2rem !important; font-weight: bold; margin: 0.4rem 0; color: #d32f2f;">📊 現在の条文の固有表現</div>', unsafe_allow_html=True)
                             current_entities = selected_article['ner_entities']
                             total_current = sum(len(entities) for entities in current_entities.values())
                             

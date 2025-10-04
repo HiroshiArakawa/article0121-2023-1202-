@@ -97,7 +97,11 @@ uv sync
 ### 2. アプリケーション起動
 
 ```bash
+# 通常のPython環境の場合
 streamlit run app_with_ner.py
+
+# uvを使用している場合
+uv run streamlit run app_with_ner.py
 ```
 
 ### 3. 基本操作フロー

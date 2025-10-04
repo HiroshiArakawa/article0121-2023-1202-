@@ -1,0 +1,176 @@
+﻿article_number,chapter,category,text,start,end
+,,ARTICLE_REFERENCE,第一章,0,3
+,,ARTICLE_REFERENCE,第二章,0,3
+,,PROCEDURE,出願,10,12
+,,ARTICLE_REFERENCE,第三章,0,3
+,,PROCEDURE,審査,4,6
+,,ARTICLE_REFERENCE,第三章,0,3
+,,PROCEDURE,出願,6,8
+,,ARTICLE_REFERENCE,第四章,0,3
+,,PROCEDURE,特許権,4,7
+,,ARTICLE_REFERENCE,第五章,0,3
+,,ARTICLE_REFERENCE,第六章,0,3
+,,PROCEDURE,審判,4,6
+,,ARTICLE_REFERENCE,第七章,0,3
+,,PROCEDURE,再審,4,6
+,,ARTICLE_REFERENCE,第八章,0,3
+,,ARTICLE_REFERENCE,第九章,0,3
+,,PROCEDURE,出願,16,18
+,,ARTICLE_REFERENCE,第十章,0,3
+,,ARTICLE_REFERENCE,第十一章,0,4
+,,LAW_REFERENCE,附　則　（昭和四一年七月一日法,0,15
+,,ARTICLE_REFERENCE,第一一一号,16,21
+,,TIME_PERIOD,四一年七月一日,7,14
+,,LAW_REFERENCE,附　則　（昭和四五年五月二二日法,0,16
+,,ARTICLE_REFERENCE,第九一号,17,21
+,,TIME_PERIOD,四五年五月二二日,7,15
+,,LAW_REFERENCE,附　則　（昭和五〇年六月二五日法,0,16
+,,ARTICLE_REFERENCE,第四六号,17,21
+,,TIME_PERIOD,五〇年六月二五日,7,15
+,,LAW_REFERENCE,附　則　（昭和五三年四月二六日法,0,16
+,,ARTICLE_REFERENCE,第三〇号,17,21
+,,TIME_PERIOD,五三年四月二六日,7,15
+,,LAW_REFERENCE,附　則　（昭和五七年八月二四日法,0,16
+,,ARTICLE_REFERENCE,第八三号,17,21
+,,TIME_PERIOD,五七年八月二四日,7,15
+,,LAW_REFERENCE,附　則　（昭和五九年五月一日法,0,15
+,,ARTICLE_REFERENCE,第二四号,16,20
+,,TIME_PERIOD,五九年五月一日,7,14
+,,LAW_REFERENCE,附　則　（昭和六〇年五月二八日法,0,16
+,,ARTICLE_REFERENCE,第四一号,17,21
+,,TIME_PERIOD,六〇年五月二八日,7,15
+,,LAW_REFERENCE,附　則　（昭和六二年五月二五日法,0,16
+,,ARTICLE_REFERENCE,第二七号,17,21
+,,TIME_PERIOD,六二年五月二五日,7,15
+,,LAW_REFERENCE,附　則　（昭和六三年一二月一三日法,0,17
+,,ARTICLE_REFERENCE,第九一号,18,22
+,,TIME_PERIOD,六三年一二月一三日,7,16
+,,LAW_REFERENCE,附　則　（平成二年六月一三日法,0,15
+,,ARTICLE_REFERENCE,第三〇号,16,20
+,,TIME_PERIOD,二年六月一三日,7,14
+,,LAW_REFERENCE,附　則　（平成五年四月二三日法,0,15
+,,ARTICLE_REFERENCE,第二六号,16,20
+,,TIME_PERIOD,五年四月二三日,7,14
+,,LAW_REFERENCE,附　則　（平成五年一一月一二日法,0,16
+,,ARTICLE_REFERENCE,第八九号,17,21
+,,TIME_PERIOD,五年一一月一二日,7,15
+,,LAW_REFERENCE,附　則　（平成六年一二月一四日法,0,16
+,,ARTICLE_REFERENCE,第一一六号,17,22
+,,TIME_PERIOD,六年一二月一四日,7,15
+,,LAW_REFERENCE,附　則　（平成七年五月一二日法,0,15
+,,ARTICLE_REFERENCE,第九一号,16,20
+,,TIME_PERIOD,七年五月一二日,7,14
+,,LAW_REFERENCE,附　則　（平成八年六月一二日法,0,15
+,,ARTICLE_REFERENCE,第六八号,16,20
+,,TIME_PERIOD,八年六月一二日,7,14
+,,LAW_REFERENCE,附　則　（平成一〇年五月六日法,0,15
+,,ARTICLE_REFERENCE,第五一号,16,20
+,,TIME_PERIOD,一〇年五月六日,7,14
+,,LAW_REFERENCE,附　則　（平成一一年五月一四日法,0,16
+,,ARTICLE_REFERENCE,第四一号,17,21
+,,TIME_PERIOD,一一年五月一四日,7,15
+,,LAW_REFERENCE,附　則　（平成一一年五月一四日法,0,16
+,,ARTICLE_REFERENCE,第四三号,17,21
+,,TIME_PERIOD,一一年五月一四日,7,15
+,,LAW_REFERENCE,附　則　（平成一一年一二月八日法,0,16
+,,ARTICLE_REFERENCE,第一五一号,17,22
+,,TIME_PERIOD,一一年一二月八日,7,15
+,,LAW_REFERENCE,附　則　（平成一一年一二月二二日法,0,17
+,,ARTICLE_REFERENCE,第一六〇号,18,23
+,,TIME_PERIOD,一一年一二月二二日,7,16
+,,LAW_REFERENCE,附　則　（平成一一年一二月二二日法,0,17
+,,ARTICLE_REFERENCE,第二二〇号,18,23
+,,TIME_PERIOD,一一年一二月二二日,7,16
+,,LAW_REFERENCE,附　則　（平成一二年五月一九日法,0,16
+,,ARTICLE_REFERENCE,第七一号,17,21
+,,TIME_PERIOD,一二年五月一九日,7,15
+,,LAW_REFERENCE,附　則　（平成一四年四月一七日法,0,16
+,,ARTICLE_REFERENCE,第二四号,17,21
+,,TIME_PERIOD,一四年四月一七日,7,15
+,,LAW_REFERENCE,附　則　（平成一四年七月三一日法,0,16
+,,ARTICLE_REFERENCE,第一〇〇号,17,22
+,,TIME_PERIOD,一四年七月三一日,7,15
+,,LAW_REFERENCE,附　則　（平成一五年五月二三日法,0,16
+,,ARTICLE_REFERENCE,第四七号,17,21
+,,TIME_PERIOD,一五年五月二三日,7,15
+,,LAW_REFERENCE,附　則　（平成一五年五月三〇日法,0,16
+,,ARTICLE_REFERENCE,第六一号,17,21
+,,TIME_PERIOD,一五年五月三〇日,7,15
+,,LAW_REFERENCE,附　則　（平成一五年七月一六日法,0,16
+,,ARTICLE_REFERENCE,第一〇八号,17,22
+,,TIME_PERIOD,一五年七月一六日,7,15
+,,LAW_REFERENCE,附　則　（平成一六年六月二日法,0,15
+,,ARTICLE_REFERENCE,第七六号,16,20
+,,TIME_PERIOD,一六年六月二日,7,14
+,,LAW_REFERENCE,附　則　（平成一六年六月四日法,0,15
+,,ARTICLE_REFERENCE,第七九号,16,20
+,,TIME_PERIOD,一六年六月四日,7,14
+,,LAW_REFERENCE,附　則　（平成一六年六月九日法,0,15
+,,ARTICLE_REFERENCE,第八四号,16,20
+,,TIME_PERIOD,一六年六月九日,7,14
+,,LAW_REFERENCE,附　則　（平成一六年六月一八日法,0,16
+,,ARTICLE_REFERENCE,第一二〇号,17,22
+,,TIME_PERIOD,一六年六月一八日,7,15
+,,LAW_REFERENCE,附　則　（平成一六年一二月一日法,0,16
+,,ARTICLE_REFERENCE,第一四七号,17,22
+,,TIME_PERIOD,一六年一二月一日,7,15
+,,LAW_REFERENCE,附　則　（平成一七年六月二九日法,0,16
+,,ARTICLE_REFERENCE,第七五号,17,21
+,,TIME_PERIOD,一七年六月二九日,7,15
+,,LAW_REFERENCE,附　則　（平成一七年一〇月二一日法,0,17
+,,ARTICLE_REFERENCE,第一〇二号,18,23
+,,TIME_PERIOD,一七年一〇月二一日,7,16
+,,LAW_REFERENCE,附　則　（平成一八年六月七日法,0,15
+,,ARTICLE_REFERENCE,第五五号,16,20
+,,TIME_PERIOD,一八年六月七日,7,14
+,,LAW_REFERENCE,附　則　（平成二〇年四月一八日法,0,16
+,,ARTICLE_REFERENCE,第一六号,17,21
+,,TIME_PERIOD,二〇年四月一八日,7,15
+,,LAW_REFERENCE,附　則　（平成二三年六月八日法,0,15
+,,ARTICLE_REFERENCE,第六三号,16,20
+,,TIME_PERIOD,二三年六月八日,7,14
+,,LAW_REFERENCE,附　則　（平成二三年六月二四日法,0,16
+,,ARTICLE_REFERENCE,第七四号,17,21
+,,TIME_PERIOD,二三年六月二四日,7,15
+,,LAW_REFERENCE,附　則　（平成二四年五月八日法,0,15
+,,ARTICLE_REFERENCE,第三〇号,16,20
+,,TIME_PERIOD,二四年五月八日,7,14
+,,LAW_REFERENCE,附　則　（平成二六年五月一四日法,0,16
+,,ARTICLE_REFERENCE,第三六号,17,21
+,,TIME_PERIOD,二六年五月一四日,7,15
+,,LAW_REFERENCE,附　則　（平成二六年六月一三日法,0,16
+,,ARTICLE_REFERENCE,第六九号,17,21
+,,TIME_PERIOD,二六年六月一三日,7,15
+,,LAW_REFERENCE,附　則　（平成二七年七月一〇日法,0,16
+,,ARTICLE_REFERENCE,第五五号,17,21
+,,TIME_PERIOD,二七年七月一〇日,7,15
+,,LAW_REFERENCE,附　則　（平成二八年五月二七日法,0,16
+,,ARTICLE_REFERENCE,第五一号,17,21
+,,TIME_PERIOD,二八年五月二七日,7,15
+,,LAW_REFERENCE,附　則　（平成二八年一二月一六日法,0,17
+,,ARTICLE_REFERENCE,第一〇八号,18,23
+,,TIME_PERIOD,二八年一二月一六日,7,16
+,,LAW_REFERENCE,附　則　（平成三〇年五月三〇日法,0,16
+,,ARTICLE_REFERENCE,第三三号,17,21
+,,TIME_PERIOD,三〇年五月三〇日,7,15
+,,LAW_REFERENCE,附　則　（平成三〇年七月六日法,0,15
+,,ARTICLE_REFERENCE,第七〇号,16,20
+,,TIME_PERIOD,三〇年七月六日,7,14
+,,LAW_REFERENCE,附　則　（令和元年五月一七日法,0,15
+,,ARTICLE_REFERENCE,第三号,16,19
+,,TIME_PERIOD,五月一七日,9,14
+,,LAW_REFERENCE,附　則　（令和三年四月二八日法,0,15
+,,ARTICLE_REFERENCE,第二四号,16,20
+,,TIME_PERIOD,三年四月二八日,7,14
+,,LAW_REFERENCE,附　則　（令和三年五月一九日法,0,15
+,,ARTICLE_REFERENCE,第三七号,16,20
+,,TIME_PERIOD,三年五月一九日,7,14
+,,LAW_REFERENCE,附　則　（令和三年五月二一日法,0,15
+,,ARTICLE_REFERENCE,第四二号,16,20
+,,TIME_PERIOD,三年五月二一日,7,14
+,,LAW_REFERENCE,附　則　（令和四年五月二五日法,0,15
+,,ARTICLE_REFERENCE,第四八号,16,20
+,,TIME_PERIOD,四年五月二五日,7,14
+,,LAW_REFERENCE,附　則　（令和五年六月一四日法,0,15
+,,ARTICLE_REFERENCE,第五一号,16,20
+,,TIME_PERIOD,五年六月一四日,7,14

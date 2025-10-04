@@ -32,11 +32,19 @@ class PatentLawNER:
                 r'前号|次号|同号|各号',
             ],
             'TIME_PERIOD': [
-                # 期間表現
+                # 複合期間表現（より具体的なパターンを先に配置）
+                r'([一二三四五六七八九十百千万〇０-９0-9]+年[一二三四五六七八九十百千万〇０-９0-9]+月)',
+                r'([一二三四五六七八九十百千万〇０-９0-9]+月[一二三四五六七八九十百千万〇０-９0-9]+日)',
+                r'([一二三四五六七八九十百千万〇０-９0-9]+年[一二三四五六七八九十百千万〇０-９0-9]+月[一二三四五六七八九十百千万〇０-９0-9]+日)',
+                # 基本的な期間表現
                 r'([一二三四五六七八九十百千万〇０-９0-9]+)(年|月|日|週間|か月)',
                 r'([一二三四五六七八九十百千万〇０-９0-9]+)(年以内|月以内|日以内)',
+                # 相対的な期間表現
                 r'(直ちに|速やかに|遅滞なく)',
                 r'(公告の日|設定の登録の日|出願の日|審決の日)',
+                # 期間の起点・終点表現
+                r'([一二三四五六七八九十百千万〇０-９0-9]+)(年間|月間|日間)',
+                r'(から|まで|以内|以上|未満|を経過)',
             ],
             'MONEY_AMOUNT': [
                 # 金額表現
@@ -107,7 +115,54 @@ class PatentLawNER:
             # 位置順でソート
             entities[category].sort(key=lambda x: x['start'])
         
+        # 重複除去とフィルタリング
+        entities = self._remove_overlaps(entities)
+        
         return entities
+    
+    def _remove_overlaps(self, entities: Dict[str, List[Dict[str, Any]]]) -> Dict[str, List[Dict[str, Any]]]:
+        """
+        重複する固有表現を除去（長い表現を優先）
+        
+        Args:
+            entities: カテゴリ別の固有表現リスト
+            
+        Returns:
+            重複除去後の固有表現リスト
+        """
+        filtered_entities = {}
+        
+        for category, items in entities.items():
+            if not items:
+                filtered_entities[category] = []
+                continue
+            
+            # 位置順でソート
+            sorted_items = sorted(items, key=lambda x: (x['start'], -len(x['text'])))
+            filtered_items = []
+            
+            for item in sorted_items:
+                # 既存のアイテムと重複チェック
+                is_overlapping = False
+                for existing in filtered_items:
+                    # 完全に含まれる場合（既存の方が長い）
+                    if (existing['start'] <= item['start'] and 
+                        item['end'] <= existing['end']):
+                        is_overlapping = True
+                        break
+                    # 新しいアイテムが既存を含む場合
+                    elif (item['start'] <= existing['start'] and 
+                          existing['end'] <= item['end']):
+                        # 既存のアイテムを削除して新しいアイテムを採用
+                        filtered_items.remove(existing)
+                        break
+                
+                if not is_overlapping:
+                    filtered_items.append(item)
+            
+            filtered_entities[category] = filtered_items
+        
+        return filtered_entities
     
     def analyze_article_text(self, article_data: Dict) -> Dict:
         """
@@ -121,8 +176,8 @@ class PatentLawNER:
         """
         result = article_data.copy()
         
-        # 条文テキストの取得
-        article_text = article_data.get('text', '')
+        # 条文テキストの取得（HTMLタグ除去）
+        article_text = self._get_clean_text(article_data)
         title = article_data.get('title', '')
         
         # 全体テキストの構成
@@ -134,8 +189,47 @@ class PatentLawNER:
         # 結果に追加
         result['ner_entities'] = entities
         result['ner_summary'] = self._create_summary(entities)
+        result['clean_text'] = article_text  # デバッグ用
         
         return result
+    
+    def _get_clean_text(self, article_data: Dict) -> str:
+        """
+        条文データからクリーンなテキストを抽出
+        
+        Args:
+            article_data: 条文データ
+            
+        Returns:
+            HTMLタグを除去したクリーンなテキスト
+        """
+        # 複数のフィールドを確認
+        text_fields = ['text', 'body', 'content', 'article_text']
+        
+        for field in text_fields:
+            if field in article_data:
+                text = article_data[field]
+                if text and isinstance(text, str):
+                    # HTMLタグが含まれている場合は除去
+                    if '<' in text and '>' in text:
+                        try:
+                            from bs4 import BeautifulSoup
+                            soup = BeautifulSoup(text, 'html.parser')
+                            clean_text = soup.get_text()
+                            # 連続する空白や改行を整理
+                            import re
+                            clean_text = re.sub(r'\s+', ' ', clean_text).strip()
+                            return clean_text
+                        except:
+                            # エラーの場合は簡単なタグ除去
+                            import re
+                            clean_text = re.sub(r'<[^>]+>', '', text)
+                            clean_text = re.sub(r'\s+', ' ', clean_text).strip()
+                            return clean_text
+                    else:
+                        return text.strip()
+        
+        return ""
     
     def _create_summary(self, entities: Dict) -> Dict:
         """固有表現の要約統計を作成"""

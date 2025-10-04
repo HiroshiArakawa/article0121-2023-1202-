@@ -48,21 +48,33 @@ st.set_page_config(
 def load_data():
     """データ読み込み（キャッシュ付き）"""
     try:
-        # NER解析済みデータを読み込み
-        with open('334AC0000000121_20230703_505AC0000000051_with_ner.pickle', 'rb') as f:
+        # 階層構造対応の改善されたNERデータを優先読み込み
+        with open('334AC0000000121_20230703_505AC0000000051_with_ner_hierarchical.pickle', 'rb') as f:
             return pickle.load(f)
     except FileNotFoundError:
-        # NER解析済みデータがない場合は元データを読み込み
-        with open('334AC0000000121_20230703_505AC0000000051.pickle', 'rb') as f:
-            return pickle.load(f)
+        try:
+            # 従来のNER解析済みデータを読み込み
+            with open('334AC0000000121_20230703_505AC0000000051_with_ner.pickle', 'rb') as f:
+                return pickle.load(f)
+        except FileNotFoundError:
+            # NER解析済みデータがない場合は元データを読み込み
+            with open('334AC0000000121_20230703_505AC0000000051.pickle', 'rb') as f:
+                return pickle.load(f)
 
 @st.cache_data
 def load_ner_csv():
     """NER結果CSVを読み込み"""
     try:
-        return pd.read_csv('patent_law_ner_results.csv')
+        # 階層構造対応の改善されたCSVを優先読み込み
+        return pd.read_csv('patent_law_ner_results_hierarchical.csv', encoding='utf-8-sig')
     except FileNotFoundError:
-        return pd.DataFrame()
+        try:
+            return pd.read_csv('patent_law_ner_results_improved.csv', encoding='utf-8-sig')
+        except FileNotFoundError:
+            try:
+                return pd.read_csv('patent_law_ner_results.csv')
+            except FileNotFoundError:
+                return pd.DataFrame()
 
 def highlight_entities(text, entities):
     """テキスト中の固有表現をハイライト（改善版）"""

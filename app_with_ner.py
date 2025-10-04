@@ -121,6 +121,27 @@ section[data-testid="stSidebar"] button[kind="primary"] {
     min-height: 2rem !important;
     padding: 0.2rem 0.5rem !important;
 }
+
+/* 固有表現カテゴリボタンの色分け（テキストベース選択） */
+/* Streamlitボタンのテキスト内容で識別 */
+
+/* 一般的なサイドバーボタンのスタイル改善 */
+section[data-testid="stSidebar"] button {
+    transition: all 0.2s ease !important;
+    border-radius: 4px !important;
+}
+
+/* ホバー効果 */
+section[data-testid="stSidebar"] button:hover {
+    opacity: 0.8 !important;
+    transform: scale(1.02) !important;
+}
+
+/* 選択中ボタンの特別なスタイル */
+section[data-testid="stSidebar"] button[kind="primary"] {
+    font-weight: bold !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -160,6 +181,9 @@ def highlight_entities(text, entities, selected_category=None):
     """テキスト中の固有表現をハイライト（カテゴリ選択対応版）"""
     if not entities:
         return text
+    
+    # デバッグ出力（一時的）
+    # print(f"DEBUG: highlight_entities called with selected_category='{selected_category}'")
     
     # エンティティの色分け（通常とハイライト用）
     normal_colors = {
@@ -208,10 +232,12 @@ def highlight_entities(text, entities, selected_category=None):
     # ハイライト処理
     highlighted_text = text
     for entity in unique_entities:
-        # カテゴリが選択されている場合は強調色、そうでなければ通常色を使用
-        if selected_category and entity['category'] == selected_category:
+        # カテゴリが選択されている場合、または「すべて」が選択されている場合は強調色と赤枠を適用
+        if selected_category == "すべて" or (selected_category and entity['category'] == selected_category):
             color = highlight_colors.get(entity['category'], '#FFD700')  # ゴールド色
             border_style = "border: 2px solid #FF6B6B; box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);"
+            # デバッグ出力（一時的）
+            # print(f"DEBUG: Applying highlight to {entity['text']} (category: {entity['category']})")
         else:
             color = normal_colors.get(entity['category'], '#F5F5F5')
             border_style = ""
@@ -244,12 +270,23 @@ def highlight_entities(text, entities, selected_category=None):
     return highlighted_text
 
 def display_entity_legend(selected_article=None):
-    """クリック可能な固有表現凡例を表示"""
+    """クリック可能な固有表現凡例を表示（色付きボタン対応版）"""
     st.sidebar.markdown("### 🏷️ 固有表現の種類 (クリックで選択)")
     
     # セッション状態から条文データを取得
     if selected_article is None and 'current_article' in st.session_state:
         selected_article = st.session_state.current_article
+    
+    # カテゴリ別の色定義（ボタン用）
+    button_colors = {
+        'LAW_REFERENCE': {'bg': '#FFE4E6', 'border': '#FFB6C1', 'text': '#8B4B8B'},
+        'ARTICLE_REFERENCE': {'bg': '#E6F3FF', 'border': '#87CEEB', 'text': '#1E3A8A'},
+        'TIME_PERIOD': {'bg': '#E6FFE6', 'border': '#98FB98', 'text': '#2F5233'},
+        'MONEY_AMOUNT': {'bg': '#FFFAE6', 'border': '#F0E68C', 'text': '#8B7355'},
+        'ORGANIZATION': {'bg': '#F3E6FF', 'border': '#DDA0DD', 'text': '#663399'},
+        'PROCEDURE': {'bg': '#FFE6F0', 'border': '#FFB6C1', 'text': '#8B5A7C'},
+        'LEGAL_STATUS': {'bg': '#E6FFFF', 'border': '#AFEEEE', 'text': '#2F4F4F'},
+    }
     
     legend_items = [
         ('LAW_REFERENCE', '📚 法律参照', '#FFF2F2'),
@@ -288,32 +325,58 @@ def display_entity_legend(selected_article=None):
                 has_entities = True
                 entity_count = len(selected_article['ner_entities'][category])
         
-        # 選択状態の確認
-        is_selected = (st.session_state.selected_category == category)
+        # 選択状態の確認（「すべて」が選択されている場合も選択状態として扱う）
+        is_selected = (st.session_state.selected_category == category or 
+                      st.session_state.selected_category == "すべて")
         
         # ボタンのスタイルとテキスト
         if has_entities:
-            button_type = "primary" if is_selected else "secondary"
             button_text = f"{description}"
             if is_selected:
-                button_text += " (選択中)"
+                if st.session_state.selected_category == "すべて":
+                    button_text += " (すべて選択中)"
+                else:
+                    button_text += " (選択中)"
             button_text += f" ({entity_count}個)"
             
-            # カラーバッジと説明をHTMLで表示（コンパクト版）
+            # カテゴリの色を取得
+            colors = button_colors.get(category, {'bg': '#F5F5F5', 'border': '#DDD', 'text': '#333'})
+            
+            # カラーバッジと説明をHTMLで表示（コンパクト版、ボタンと同じ色で統一）
             badge_html = (
-                f'<div style="background-color: {color}; padding: 2px 6px; margin: 1px 0; '
-                f'border-radius: 2px; font-size: 10px; border: 1px solid {color}88; '
-                f'color: #333; display: inline-block; width: 100%; text-align: center;">'
+                f'<div style="background-color: {colors["bg"]}; padding: 2px 6px; margin: 1px 0; '
+                f'border-radius: 2px; font-size: 10px; border: 1px solid {colors["border"]}; '
+                f'color: {colors["text"]}; display: inline-block; width: 100%; text-align: center;">'
                 f'<small>({category})</small></div>'
             )
             st.sidebar.markdown(badge_html, unsafe_allow_html=True)
             
-            # クリック可能なボタン
+            # 色付きボタンのスタイルをCSSで適用（動的に生成）
+            button_style_css = f"""
+            <style>
+            /* {category}ボタンの色設定 */
+            button[key="legend_{category}"] {{
+                background: {colors["border"] if is_selected else colors["bg"]} !important;
+                color: {"#FFFFFF" if is_selected else colors["text"]} !important;
+                border: 1px solid {colors["border"]} !important;
+                font-weight: {"bold" if is_selected else "normal"} !important;
+                transition: all 0.2s ease !important;
+            }}
+            
+            button[key="legend_{category}"]:hover {{
+                opacity: 0.8 !important;
+                transform: scale(1.02) !important;
+            }}
+            </style>
+            """
+            st.sidebar.markdown(button_style_css, unsafe_allow_html=True)
+            
+            # Streamlitボタン（CSSで色が適用される）
             if st.sidebar.button(
                 button_text,
                 key=f"legend_{category}",
                 help=f"{description}を強調表示",
-                type=button_type,
+                type="primary" if is_selected else "secondary",
                 use_container_width=True
             ):
                 st.session_state.selected_category = category
@@ -432,12 +495,13 @@ def main():
                     
                     article_text = get_article_text(selected_article)
                     
-                    # 表示モード選択
+                    # 表示モード選択（デフォルト：ハイライト表示）
                     display_mode = st.radio(
                         "表示モード:",
-                        ["原文表示", "ハイライト表示"],
+                        ["ハイライト表示", "原文表示"],
+                        index=0,  # デフォルトでハイライト表示を選択
                         horizontal=True,
-                        help="原文表示：元のテキストをそのまま表示 / ハイライト表示：固有表現をカラーハイライト"
+                        help="ハイライト表示：固有表現をカラーハイライト / 原文表示：元のテキストをそのまま表示"
                     )
                     
                     if display_mode == "ハイライト表示" and 'ner_entities' in selected_article:
@@ -488,8 +552,8 @@ def main():
                                         st.session_state.selected_category = cat
                                         st.session_state.category_selection_source = "quick_button"
                         
-                        # 選択されたカテゴリに応じてハイライト
-                        highlight_category = None if selected_category == "すべて" else selected_category
+                        # 選択されたカテゴリに応じてハイライト（「すべて」の場合はそのまま渡す）
+                        highlight_category = selected_category
                         highlighted_text = highlight_entities(article_text, selected_article['ner_entities'], highlight_category)
                         
                         st.markdown("#### 🎨 固有表現ハイライト表示")
@@ -515,8 +579,7 @@ def main():
                                 "原文テキスト",
                                 article_text,
                                 height=200,
-                                disabled=True,
-                                label_visibility="collapsed"
+                                disabled=True
                             )
                     else:
                         # 原文表示（デフォルト）
@@ -525,8 +588,7 @@ def main():
                             "条文内容",
                             article_text,
                             height=300,
-                            disabled=True,
-                            label_visibility="collapsed"
+                            disabled=True
                         )
                         
                         if 'ner_entities' in selected_article:
@@ -630,14 +692,21 @@ def main():
                             for category, entities in current_entities.items():
                                 if entities:
                                     category_display = category_names.get(category, category.replace('_', ' '))
-                                    is_selected = (st.session_state.selected_category == category)
+                                    is_selected = (st.session_state.selected_category == category or 
+                                                  st.session_state.selected_category == "すべて")
                                     
                                     # 選択中の場合は特別な表示
                                     if is_selected:
-                                        st.metric(
-                                            f"🎯 {category_display} (強調中)",
-                                            f"{len(entities)}個"
-                                        )
+                                        if st.session_state.selected_category == "すべて":
+                                            st.metric(
+                                                f"🎯 {category_display} (すべて強調中)",
+                                                f"{len(entities)}個"
+                                            )
+                                        else:
+                                            st.metric(
+                                                f"🎯 {category_display} (強調中)",
+                                                f"{len(entities)}個"
+                                            )
                                     else:
                                         st.metric(
                                             category_display,

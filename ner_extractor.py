@@ -14,10 +14,16 @@ class PatentLawNER:
         # 法的固有表現のパターン定義
         self.patterns = {
             'LAW_REFERENCE': [
-                # 他の法律への参照
-                r'([^条文]*法)(第[^条]*条|第[^章]*章|第[^節]*節)?',
-                r'(特許法|実用新案法|意匠法|商標法|著作権法|民法|刑法|行政手続法|知的財産基本法)',
+                # 具体的な法律名
+                r'(特許法|実用新案法|意匠法|商標法|著作権法|民法|刑法|行政手続法|知的財産基本法|不正競争防止法|独占禁止法|会社法|商標法等の一部を改正する法律)(第[^条]*条|第[^章]*章|第[^節]*節)?',
+                r'([不民商工労建独消債公行政][^この本当該同あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん]*法律?)(第[^条]*条|第[^章]*章|第[^節]*節)?',
+                # 代名詞的法律参照（「この法律」「その法律」など全体を抽出）
+                r'(この法律|その法律|当該法律|本法律)',
+                r'(この法|その法|当該法|本法)',
                 r'(政令|省令|規則|告示)',
+                # 年号付きの法律
+                r'(平成|昭和|令和|大正|明治)[一二三四五六七八九十百千万〇０-９0-9]+年法律第[一二三四五六七八九十百千万〇０-９0-9]+号',
+                r'(平成|昭和|令和|大正|明治)[一二三四五六七八九十百千万〇０-９0-9]+年.*?法律',
             ],
             'ARTICLE_REFERENCE': [
                 # 条文参照
@@ -118,7 +124,65 @@ class PatentLawNER:
         # 重複除去とフィルタリング
         entities = self._remove_overlaps(entities)
         
+        # 不適切な表現のフィルタリング
+        entities = self._filter_inappropriate_entities(entities)
+        
         return entities
+    
+    def _filter_inappropriate_entities(self, entities: Dict[str, List[Dict[str, Any]]]) -> Dict[str, List[Dict[str, Any]]]:
+        """
+        不適切な固有表現を除外
+        
+        Args:
+            entities: カテゴリ別の固有表現リスト
+            
+        Returns:
+            フィルタリング後の固有表現リスト
+        """
+        filtered_entities = {}
+        
+        # LAW_REFERENCEの不適切な表現リスト
+        inappropriate_law_refs = {
+            '法', 'の法', 'は法', 'に法', 'で法', 'を法', 'が法',
+            'の法律', 'は法律', 'に法律', 'で法律', 'を法律', 'が法律',
+            'り法', 'り法律', 'し法', 'し法律', 'て法', 'て法律'
+        }
+        
+        for category, items in entities.items():
+            filtered_items = []
+            
+            for item in items:
+                text = item['text'].strip()
+                
+                if category == 'LAW_REFERENCE':
+                    # 不適切な表現を除外
+                    if text in inappropriate_law_refs:
+                        continue
+                    # 先頭に空白がある場合は除外（正規表現のキャプチャの問題）
+                    if text.startswith(' '):
+                        text = text.strip()
+                        if text in inappropriate_law_refs:
+                            continue
+                    # 短すぎる表現や不適切な表現を除外
+                    if len(text) < 2:
+                        continue
+                    # 単独の助詞や接続詞的な表現を除外
+                    if text in ['は', 'の', 'が', 'を', 'に', 'で', 'と', 'や', 'から', 'まで']:
+                        continue
+                    # 「律は、」「法、」などの不完全な表現を除外
+                    if text.endswith('、') or text.endswith('は') or text.endswith('が'):
+                        continue
+                    # 数字や助詞で始まる不適切な表現を除外
+                    if text[0] in '0123456789０１２３４５６７８９〇一二三四五六七八九十はがをにで':
+                        continue
+                
+                # テキストを正規化（前後の空白を削除）
+                item['text'] = text
+                filtered_items.append(item)
+            
+            filtered_entities[category] = filtered_items
+        
+        return filtered_entities
     
     def _remove_overlaps(self, entities: Dict[str, List[Dict[str, Any]]]) -> Dict[str, List[Dict[str, Any]]]:
         """

@@ -266,33 +266,42 @@ h4:contains("📊 統計情報") {
 def load_data():
     """データ読み込み（キャッシュ付き）"""
     try:
-        # 階層構造対応の改善されたNERデータを優先読み込み
-        with open('334AC0000000121_20230703_505AC0000000051_with_ner_hierarchical.pickle', 'rb') as f:
+        # 修正されたNERデータを最優先で読み込み
+        with open('334AC0000000121_20230703_505AC0000000051_with_ner_fixed.pickle', 'rb') as f:
             return pickle.load(f)
     except FileNotFoundError:
         try:
-            # 従来のNER解析済みデータを読み込み
-            with open('334AC0000000121_20230703_505AC0000000051_with_ner.pickle', 'rb') as f:
+            # 階層構造対応の改善されたNERデータを読み込み
+            with open('334AC0000000121_20230703_505AC0000000051_with_ner_hierarchical.pickle', 'rb') as f:
                 return pickle.load(f)
         except FileNotFoundError:
-            # NER解析済みデータがない場合は元データを読み込み
-            with open('334AC0000000121_20230703_505AC0000000051.pickle', 'rb') as f:
-                return pickle.load(f)
+            try:
+                # 従来のNER解析済みデータを読み込み
+                with open('334AC0000000121_20230703_505AC0000000051_with_ner.pickle', 'rb') as f:
+                    return pickle.load(f)
+            except FileNotFoundError:
+                # NER解析済みデータがない場合は元データを読み込み
+                with open('334AC0000000121_20230703_505AC0000000051.pickle', 'rb') as f:
+                    return pickle.load(f)
 
 @st.cache_data
 def load_ner_csv():
     """NER結果CSVを読み込み"""
     try:
-        # 階層構造対応の改善されたCSVを優先読み込み
-        return pd.read_csv('patent_law_ner_results_hierarchical.csv', encoding='utf-8-sig')
+        # 修正されたNER結果CSVを最優先で読み込み
+        return pd.read_csv('patent_law_ner_results_fixed.csv', encoding='utf-8-sig')
     except FileNotFoundError:
         try:
-            return pd.read_csv('patent_law_ner_results_improved.csv', encoding='utf-8-sig')
+            # 階層構造対応の改善されたCSVを読み込み
+            return pd.read_csv('patent_law_ner_results_hierarchical.csv', encoding='utf-8-sig')
         except FileNotFoundError:
             try:
-                return pd.read_csv('patent_law_ner_results.csv')
+                return pd.read_csv('patent_law_ner_results_improved.csv', encoding='utf-8-sig')
             except FileNotFoundError:
-                return pd.DataFrame()
+                try:
+                    return pd.read_csv('patent_law_ner_results.csv')
+                except FileNotFoundError:
+                    return pd.DataFrame()
 
 def highlight_entities(text, entities, selected_category=None):
     """テキスト中の固有表現をハイライト（カテゴリ選択対応版）"""

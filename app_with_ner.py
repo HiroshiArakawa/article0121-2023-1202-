@@ -25,16 +25,49 @@ def get_article_text(article):
                         clean_text = soup.get_text()
                         # 連続する空白や改行を整理
                         clean_text = re.sub(r'\s+', ' ', clean_text).strip()
+                        # 項番号での改行処理を追加
+                        clean_text = format_article_paragraphs(clean_text)
                         return clean_text
                     except:
                         # エラーの場合は簡単なタグ除去
                         clean_text = re.sub(r'<[^>]+>', '', text)
                         clean_text = re.sub(r'\s+', ' ', clean_text).strip()
+                        # 項番号での改行処理を追加
+                        clean_text = format_article_paragraphs(clean_text)
                         return clean_text
                 else:
-                    return text
+                    # 項番号での改行処理を追加
+                    formatted_text = format_article_paragraphs(text)
+                    return formatted_text
     
     return "テキストが見つかりません"
+
+def format_article_paragraphs(text):
+    """条文テキストを項番号で改行して整形"""
+    if not text:
+        return text
+    
+    # 全角数字の項番号パターン（２、３、４...１０、１１...）の前で改行
+    # スペース + 全角数字（1桁または2桁） + スペースのパターンを検出
+    # ２～９、１０、１１、１２... を対象とする
+    formatted_text = re.sub(r'(\s+)([２３４５６７８９]|[１２][０-９])(\s+)', r'\n\n\2 ', text)
+    
+    # 行頭の空白を除去し、段落間の余分な改行を整理
+    lines = []
+    for line in formatted_text.split('\n'):
+        line = line.strip()
+        if line:  # 空行でない場合のみ追加
+            lines.append(line)
+    
+    # 項番号で始まる行の前に空行を追加（最初の行は除く）
+    result_lines = []
+    for i, line in enumerate(lines):
+        # 全角数字の項番号で始まる行をチェック
+        if i > 0 and re.match(r'^([２３４５６７８９]|[１２][０-９])\s', line):
+            result_lines.append('')  # 空行を追加
+        result_lines.append(line)
+    
+    return '\n'.join(result_lines)
 
 # ページ設定
 st.set_page_config(

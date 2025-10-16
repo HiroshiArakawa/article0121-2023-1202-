@@ -52,6 +52,10 @@ def format_article_paragraphs(text):
     # ２～９、１０、１１、１２... を対象とする
     formatted_text = re.sub(r'(\s+)([２３４５６７８９]|[１２][０-９])(\s+)', r'\n\n\2 ', text)
     
+    # 漢数字の項番号パターン（一、二、三、四、五...）の前で改行
+    # スペース + 漢数字 + スペースのパターンを検出
+    formatted_text = re.sub(r'(\s+)([一二三四五六七八九十])(\s+)', r'\n\n\2 ', formatted_text)
+    
     # 行頭の空白を除去し、段落間の余分な改行を整理
     lines = []
     for line in formatted_text.split('\n'):
@@ -62,8 +66,8 @@ def format_article_paragraphs(text):
     # 項番号で始まる行の前に空行を追加（最初の行は除く）
     result_lines = []
     for i, line in enumerate(lines):
-        # 全角数字の項番号で始まる行をチェック
-        if i > 0 and re.match(r'^([２３４５６７８９]|[１２][０-９])\s', line):
+        # 全角数字または漢数字の項番号で始まる行をチェック
+        if i > 0 and re.match(r'^([２３４５６７８９]|[１２][０-９]|[一二三四五六七八九十])\s', line):
             result_lines.append('')  # 空行を追加
         result_lines.append(line)
     
@@ -341,6 +345,22 @@ def highlight_entities(text, entities, selected_category=None):
     if not entities:
         return text
     
+    # 入力テキストのHTMLタグを完全に除去（安全のため）
+    if '<' in text and '>' in text:
+        try:
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(text, 'html.parser')
+            text = soup.get_text()
+            # 連続する空白や改行を整理
+            text = re.sub(r'\s+', ' ', text).strip()
+        except:
+            # BeautifulSoupが使えない場合は正規表現で除去
+            text = re.sub(r'<[^>]+>', '', text)
+            text = re.sub(r'\s+', ' ', text).strip()
+    
+    # 項番号での改行処理を適用
+    text = format_article_paragraphs(text)
+    
     # デバッグ出力（一時的）
     # print(f"DEBUG: highlight_entities called with selected_category='{selected_category}'")
     
@@ -388,6 +408,25 @@ def highlight_entities(text, entities, selected_category=None):
     # テキスト長の降順でソート（長い表現を先に処理）
     unique_entities.sort(key=lambda x: len(x['text']), reverse=True)
     
+    # 入れ子防止: 重複するエンティティを除去
+    # 長いエンティティを優先し、短いエンティティがその一部の場合は除去
+    filtered_entities = []
+    for i, entity in enumerate(unique_entities):
+        is_subset = False
+        for j, other_entity in enumerate(unique_entities):
+            if i != j and len(other_entity['text']) > len(entity['text']):
+                # 他のエンティティがより長く、現在のエンティティがその一部の場合
+                if entity['text'] in other_entity['text']:
+                    is_subset = True
+                    print(f"DEBUG: Skipping '{entity['text']}' (subset of '{other_entity['text']}')")
+                    break
+        
+        if not is_subset:
+            filtered_entities.append(entity)
+    
+    print(f"DEBUG: Original entities: {len(unique_entities)}, Filtered: {len(filtered_entities)}")
+    unique_entities = filtered_entities
+    
     # ハイライト処理
     highlighted_text = text
     for entity in unique_entities:
@@ -402,8 +441,26 @@ def highlight_entities(text, entities, selected_category=None):
             border_style = ""
         entity_text = entity['text']
         
-        # 既にハイライトされていないかチェック
-        if entity_text in highlighted_text and highlighted_text.count(f'>{entity_text}<') == 0:
+        # 入れ子を防ぐための厳密なチェック
+        # 1. エンティティがテキスト内に存在するか
+        # 2. 既にspanタグで囲まれていないか
+        # 3. spanタグの内部に含まれていないか
+        if (entity_text in highlighted_text and 
+            f'>{entity_text}</span>' not in highlighted_text and
+            f'<span' not in highlighted_text[highlighted_text.find(entity_text)-20:highlighted_text.find(entity_text)+len(entity_text)+20]):
+            
+            # さらに詳細なチェック: エンティティの前後にspanタグがないか確認
+            entity_start = highlighted_text.find(entity_text)
+            if entity_start != -1:
+                # エンティティの前後20文字をチェック
+                before_text = highlighted_text[max(0, entity_start-50):entity_start]
+                after_text = highlighted_text[entity_start+len(entity_text):entity_start+len(entity_text)+50]
+                
+                # spanタグの内部でないかチェック
+                open_spans_before = before_text.count('<span') - before_text.count('</span>')
+                if open_spans_before > 0:
+                    print(f"DEBUG: Skipping '{entity_text}' - inside existing span tag")
+                    continue
             # カテゴリ名を日本語で表示
             category_jp = {
                 'LAW_REFERENCE': '法律参照',
@@ -415,16 +472,43 @@ def highlight_entities(text, entities, selected_category=None):
                 'LEGAL_STATUS': '法的地位'
             }.get(entity['category'], entity['category'])
             
-            highlighted_part = (
-                f'<span style="background-color: {color}; '
-                f'padding: 1px 3px; margin: 0 1px; border-radius: 3px; '
-                f'font-weight: 500; border: 1px solid {color}88; {border_style}" '
-                f'title="{category_jp}: {entity_text}">'
-                f'{entity_text}</span>'
-            )
+            # HTMLタグを一行で確実に構築（改行による問題を防ぐ）
+            style_attrs = f"background-color: {color}; padding: 1px 3px; margin: 0 1px; border-radius: 3px; font-weight: 500; border: 1px solid {color}88; {border_style}"
+            highlighted_part = f'<span style="{style_attrs}" title="{category_jp}: {entity_text}">{entity_text}</span>'
+            
+            # デバッグ用ログ（一時的に有効化）
+            print(f"DEBUG: Entity '{entity_text}' -> {highlighted_part[:50]}...")
             
             # 最初の出現箇所のみ置換
+            old_highlighted_text = highlighted_text
             highlighted_text = highlighted_text.replace(entity_text, highlighted_part, 1)
+            
+            # 置換が実際に行われたかチェック
+            if old_highlighted_text == highlighted_text:
+                print(f"WARNING: No replacement made for '{entity_text}'")
+            else:
+                print(f"SUCCESS: Replaced '{entity_text}'")
+            
+            # spanタグの整合性をチェック
+            span_open_count = highlighted_text.count('<span')
+            span_close_count = highlighted_text.count('</span>')
+            if span_open_count != span_close_count:
+                print(f"ERROR: span tag mismatch after processing '{entity_text}' - open: {span_open_count}, close: {span_close_count}")
+                # 緊急修正: 不整合がある場合は元のテキストに戻す
+                highlighted_text = old_highlighted_text
+                print(f"RECOVERY: Reverted to previous state for '{entity_text}'")
+    
+    
+    # 最終的なspanタグ整合性チェック
+    final_span_open = highlighted_text.count('<span')
+    final_span_close = highlighted_text.count('</span>')
+    if final_span_open != final_span_close:
+        print(f"CRITICAL ERROR: Final span tag mismatch - open: {final_span_open}, close: {final_span_close}")
+        # 緊急時はすべてのspanタグを除去して元のテキストを返す
+        import re
+        highlighted_text = re.sub(r'<span[^>]*>', '', highlighted_text)
+        highlighted_text = highlighted_text.replace('</span>', '')
+        print("EMERGENCY RECOVERY: Removed all span tags, returning plain text")
     
     return highlighted_text
 
@@ -705,6 +789,43 @@ def main():
                                 height=200,
                                 disabled=True
                             )
+                        
+                        # デバッグ用: ハイライト処理後の生文字列を表示
+                        with st.expander("🔧 ハイライト処理後の生データ（デバッグ用）"):
+                            st.text_area(
+                                "ハイライト処理後の文字列",
+                                highlighted_text,
+                                height=300,
+                                disabled=True,
+                                help="実際にst.markdownに渡される文字列の内容です。HTMLタグの整合性を確認できます。"
+                            )
+                            
+                            # spanタグの統計情報も表示
+                            span_open_count = highlighted_text.count('<span')
+                            span_close_count = highlighted_text.count('</span>')
+                            st.info(f"📊 タグ統計: <span開始タグ: {span_open_count}個, </span>終了タグ: {span_close_count}個")
+                            
+                            if span_open_count != span_close_count:
+                                st.error(f"⚠️ HTMLタグの不整合を検出! 開始タグ({span_open_count})と終了タグ({span_close_count})の数が一致しません。")
+                                
+                                # 緊急時対応: HTMLタグを除去したバージョンを表示
+                                import re
+                                clean_text = re.sub(r'<span[^>]*>', '', highlighted_text)
+                                clean_text = clean_text.replace('</span>', '')
+                                st.markdown("#### 🚨 緊急時表示（HTMLタグ除去版）")
+                                st.markdown(clean_text)
+                            else:
+                                st.success("✅ HTMLタグの整合性OK")
+                                
+                            # 不完全なタグを検索して表示
+                            import re
+                            incomplete_spans = re.findall(r'<span[^>]*(?<!>)$', highlighted_text, re.MULTILINE)
+                            if incomplete_spans:
+                                st.warning(f"⚠️ 不完全なspanタグが検出されました: {len(incomplete_spans)}個")
+                                for i, span in enumerate(incomplete_spans[:3], 1):
+                                    st.code(f"{i}: {span}", language="html")
+                            else:
+                                st.info("✅ 不完全なspanタグはありません")
                         
                         # カテゴリ選択機能を下に移動
                         st.markdown("#### 🎯 固有表現カテゴリ選択")
